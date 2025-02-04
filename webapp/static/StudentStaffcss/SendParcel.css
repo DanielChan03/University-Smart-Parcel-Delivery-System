@@ -8,6 +8,15 @@
     min-height: 100vh;
 }
 
+.send-parcel-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    display: block;  /* Ensure it's visible */
+    width: 100%;
+}
+
+
 /* Form Container */
 .send-parcel-container form {
     background-color: #fff;

@@ -35,19 +35,6 @@ def submit_feedback():
 
     return render_template('StudentStaff/StudentStaffFeedback.html')
 
-@views.route('/get_students_by_university_and_name', methods=['GET'])
-def get_students_by_university_and_name():
-    university_id = request.args.get('university_id')
-    search_name = request.args.get('search_name', '')
-
-    # Filter students by university and name starting with the search term
-    students = StudentStaff.query.filter(
-        StudentStaff.University_ID == university_id,
-        StudentStaff.User_Name.ilike(f'{search_name}%')  # case-insensitive search
-    ).all()
-
-    student_data = [{'User_ID': student.User_ID, 'User_Name': student.User_Name} for student in students]
-    return jsonify(student_data)
 
 
 @views.route('/send_parcel', methods=['GET', 'POST'])
@@ -55,26 +42,37 @@ def get_students_by_university_and_name():
 def send_parcel():
     # Get all universities for the dropdown
     universities = University.query.all()
-    sender = StudentStaff.query.filter_by(User_ID=current_user.User_ID).first()  # Get the sender
-    sender_university_prefix = sender.get_university_prefix()
+    sender = StudentStaff.query.filter_by(User_ID=current_user.User_ID).first()
+    sender_university_id = sender.University_ID  # Get sender's university ID
 
     if request.method == 'POST':
         sender_user_id = request.form['sender_user_id']
-        receiver_identifier = request.form['receiver_identifier']  # Receiver's name or ID
-        receiver_university_id = request.form['receiver_university']  # Selected university
+        receiver_identifier = request.form['receiver_identifier']
+        receiver_university_id = request.form['receiver_university']
+
+        # Ensure the sender and receiver are not the same person
+        if str(receiver_identifier) == str(sender_user_id):
+            flash('You cannot send a parcel to yourself.', 'error')
+            return redirect(url_for('views.send_parcel'))
+
+        # Ensure the sender and receiver are from different universities
+        if str(receiver_university_id) == str(sender_university_id):
+            flash('Receiver cannot be from the same university as the sender.', 'error')
+            return redirect(url_for('views.send_parcel'))
 
         # Try to find the receiver by name first
-        receiver = StudentStaff.query.filter_by(User_Name=receiver_identifier).first()
+        receiver = StudentStaff.query.filter_by(User_Name=receiver_identifier, University_ID=receiver_university_id).first()
 
         # If not found by name, try to find by user ID
         if not receiver:
-            receiver = StudentStaff.query.filter_by(User_ID=receiver_identifier).first()
+            receiver = StudentStaff.query.filter_by(User_ID=receiver_identifier, University_ID=receiver_university_id).first()
 
+        # Ensure receiver exists in the selected university
         if receiver is None:
-            flash('Receiver not found. Please check the name or user ID and try again.', 'error')
+            flash('Receiver not found in the selected university. Please check the name or user ID.', 'error')
             return redirect(url_for('views.send_parcel'))
 
-        receiver_user_id = receiver.User_ID  # We use receiver's user ID here
+        receiver_user_id = receiver.User_ID  # Receiver's User ID
 
         # Find an available locker at the sender's university
         sender_university_prefix = sender.get_university_prefix()
@@ -99,17 +97,17 @@ def send_parcel():
         while Delivery.query.filter_by(Delivery_ID=delivery_id).first():
             delivery_id = f"DEL{''.join(random.choices('0123456789', k=8))}"
 
-        # Create a new delivery entry (This is only done if the locker is available)
+        # Create a new delivery entry
         new_delivery = Delivery(
             Delivery_ID=delivery_id,
-            Courier_ID=None,  # Set later when a courier is assigned
-            Deliver_Date=None,  # Set when the parcel is collected
-            Arrival_Date=None  # Set when the parcel arrives
+            Courier_ID=None,
+            Deliver_Date=None,
+            Arrival_Date=None
         )
         db.session.add(new_delivery)
         db.session.commit()
 
-        # Get the sender's manager
+        # Get sender's manager
         sender_university_name = sender.get_university_name()
         send_manager = ParcelManager.query.filter_by(Manager_Work_Branch=sender_university_name).first()
 
@@ -117,24 +115,24 @@ def send_parcel():
             flash('No manager found for the sender university. Please contact support.', 'error')
             return redirect(url_for('views.send_parcel'))
 
-        # Get the receiver's university name
+        # Get receiver's university name
         receiver_university = University.query.get(receiver_university_id)
         receiver_university_name = receiver_university.University_Name
 
-        # Get the receiver's manager
+        # Get receiver's manager
         receive_manager = ParcelManager.query.filter_by(Manager_Work_Branch=receiver_university_name).first()
 
         if receive_manager is None:
             flash('No manager found for the receiver university. Please contact support.', 'error')
             return redirect(url_for('views.send_parcel'))
 
-        # Create a new parcel entry (Parcel creation should occur only if a valid locker exists)
+        # Create a new parcel entry
         new_parcel = Parcel(
             Parcel_ID=f"PAR{''.join(random.choices('0123456789', k=8))}",
             Sender_User_ID=sender_user_id,
-            Recipient_User_ID=receiver_user_id,  # Using the receiver's user ID
+            Recipient_User_ID=receiver_user_id,
             Send_Locker_ID=send_locker_id,
-            Receive_Locker_ID=None,  # Set when the parcel is received
+            Receive_Locker_ID=None,
             Delivery_ID=delivery_id,
             Parcel_Sent_at=datetime.utcnow(),
             Send_Manager_ID=send_manager.Manager_ID,
@@ -152,8 +150,6 @@ def send_parcel():
         universities=universities,
         sender_university_name=sender.get_university_name()
     )
-
-
 
 @views.route('/report_locker_issue', methods=['GET', 'POST'])
 @login_required

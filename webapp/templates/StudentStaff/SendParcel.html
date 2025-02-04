@@ -8,9 +8,11 @@
 
 {% block content %}
 <div class="send-parcel-container">
-    <form action="{{ url_for('views.send_parcel') }}" method="POST" id="sendParcelForm">
-        <h2>Send a Parcel</h2>
+  
+    <form action="{{ url_for('views.send_parcel') }}" method="POST">
+        <h2 class="form-title">Send a Parcel</h2>
 
+        
         <!-- Sender Details -->
         <label for="sender_name">Sender's Name</label>
         <input type="text" id="sender_name" name="sender_name" value="{{ user.User_Name }}" readonly>
@@ -18,87 +20,26 @@
         <label for="sender_university">Sender's University</label>
         <input type="text" id="sender_university" name="sender_university" value="{{ sender_university_name }}" readonly>
 
+        <input type="hidden" name="sender_user_id" value="{{ user.User_ID }}">
+        <input type="hidden" name="sender_university_id" value="{{ user.University_ID }}">
+
         <!-- Receiver Details -->
         <label for="receiver_university">Receiver's University</label>
-        <select id="receiver_university" name="receiver_university" required onchange="checkReceiverUniversity()">
+        <select id="receiver_university" name="receiver_university" required>
             <option value="" disabled selected>Select a university</option>
             {% for university in universities %}
-                <option value="{{ university.University_ID }}" {% if university.University_ID == request.form['receiver_university'] %}selected{% endif %}>{{ university.University_Name }}</option>
+                {% if university.University_ID != user.University_ID %}
+                    <option value="{{ university.University_ID }}">{{ university.University_Name }}</option>
+                {% endif %}
             {% endfor %}
         </select>
 
         <label for="receiver_identifier">Receiver's Name or User ID</label>
-        <input type="text" id="receiver_identifier" name="receiver_identifier" required onkeyup="fetchStudents()">
+        <input type="text" id="receiver_identifier" name="receiver_identifier" required>
 
-        <!-- Suggestions for student names -->
-        <ul id="student-suggestions" style="display:none;"></ul>
+        <!-- Submit Button -->
+        <button type="submit">Send Parcel</button>
 
-        <!-- Hidden Fields -->
-        <input type="hidden" name="sender_user_id" value="{{ user.User_ID }}">
-        <input type="hidden" id="sender_university_id" value="{{ sender_university_id }}">
-
-        <!-- Send Parcel Button -->
-        <button type="submit" id="submitBtn">Send Parcel</button>
-        <div id="university-warning" style="color: red; display: none;">Receiver cannot be from the same university as the sender.</div>
     </form>
 </div>
-
-<script>
-    function fetchStudents() {
-        const universityId = document.getElementById('receiver_university').value;
-        const searchName = document.getElementById('receiver_identifier').value;
-        const senderUniversityId = document.getElementById('sender_university_id').value;
-
-        if (universityId && searchName.length >= 2) { // Only search when there are at least 2 characters
-            fetch(`/get_students_by_university_and_name?university_id=${universityId}&search_name=${searchName}&sender_university_id=${senderUniversityId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const suggestionsList = document.getElementById('student-suggestions');
-                    suggestionsList.innerHTML = '';  // Clear previous suggestions
-                    if (data.length > 0) {
-                        data.forEach(student => {
-                            const li = document.createElement('li');
-                            li.textContent = `${student.User_Name} (ID: ${student.User_ID})`;
-                            li.onclick = function() {
-                                document.getElementById('receiver_identifier').value = student.User_Name;
-                                suggestionsList.style.display = 'none'; // Hide suggestions after selection
-                            };
-                            suggestionsList.appendChild(li);
-                        });
-                        suggestionsList.style.display = 'block';  // Show suggestions
-                    } else {
-                        suggestionsList.style.display = 'none';  // Hide if no students found
-                    }
-                });
-        } else {
-            document.getElementById('student-suggestions').style.display = 'none';
-        }
-    }
-
-    function checkReceiverUniversity() {
-        const receiverUniversityId = document.getElementById('receiver_university').value;
-        const senderUniversityId = document.getElementById('sender_university_id').value;
-        
-        if (receiverUniversityId === senderUniversityId) {
-            document.getElementById('university-warning').style.display = 'block';
-            document.getElementById('submitBtn').disabled = true; // Disable the submit button
-        } else {
-            document.getElementById('university-warning').style.display = 'none';
-            document.getElementById('submitBtn').disabled = false; // Enable the submit button
-        }
-    }
-
-    // Disable the sender's university from being selected for the receiver
-    document.addEventListener("DOMContentLoaded", function() {
-        const senderUniversityId = document.getElementById('sender_university_id').value;
-        const receiverUniversitySelect = document.getElementById('receiver_university');
-        
-        // Disable the sender's university in the receiver's university dropdown
-        for (let option of receiverUniversitySelect.options) {
-            if (option.value == senderUniversityId) {
-                option.disabled = true;
-            }
-        }
-    });
-</script>
 {% endblock %}
