@@ -34,12 +34,12 @@
     <div class="feedback-form">
         <h2>Submit Feedback</h2>
         <form action="{{ url_for('views.submit_feedback') }}" method="POST">
-            <select name="feedbackType">
+            <select name="feedback_type">
                 <option value="General">General</option>
                 <option value="Suggestion">Suggestion</option>
                 <option value="Complaint">Complaint</option>
             </select>
-            <textarea name="feedbackContent" placeholder="Enter your feedback..." required></textarea>
+            <textarea name="content" placeholder="Enter your feedback..." required></textarea>
             <button type="submit">Submit</button>
         </form>
     </div>
