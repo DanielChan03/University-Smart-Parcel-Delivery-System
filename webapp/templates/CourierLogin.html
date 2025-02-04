@@ -1,0 +1,27 @@
+{% extends "CourierBase.html" %}
+
+{% block title %}Courier Login{% endblock %}
+
+{% block styles %} 
+    <link rel = "stylesheet" href = "{{ url_for('static', filename = 'CourierLogin.css')}}">
+{% endblock %}
+
+{% block content %}
+    <div class = "CourierLogin-container">
+        <form method="POST" class = "login-form">
+            <h3 class="form-title">Courier Login</h3>
+            <div class = "form-group">
+                <input type="email" class = "form-control" id = "email" name = "email" placeholder="Enter your email address" required>
+            </div>
+            <div class = "form-group">
+                <input type="password" class = "form-control" id = "password" name = "password" placeholder="Enter your password" required>
+            </div>
+            <div class= "form-group">
+                <button type="submit" class="btn-submit">Login</button>
+            </div>
+            <div class="form-group">
+                <a href="#" class="btn-link">Forgot Password?</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

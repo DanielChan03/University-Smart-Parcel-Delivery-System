@@ -44,7 +44,7 @@ def send_parcel():
     sender = StudentStaff.query.filter_by(User_ID=current_user.User_ID).first()
 
     sender_university_name = sender.get_university_name()
-    sender_university_location = sender.get_university_location()
+    sender_university_prefix = sender.get_university_prefix()
 
     receiver_users = StudentStaff.query.all()
 
@@ -71,9 +71,9 @@ def send_parcel():
         db.session.add(new_delivery)
         db.session.commit()
 
-        available_locker = SmartLocker.query.filter_by(
-            Locker_Status='Available',
-            Locker_Location=sender_university_location
+        available_locker = SmartLocker.query.filter(
+            SmartLocker.Locker_Status == 'Available', 
+            SmartLocker.Locker_ID.like(f"{sender_university_prefix}%")  # Match prefix
         ).first()
 
         if available_locker:
@@ -153,7 +153,6 @@ def report_locker_issue():
     # GET method (Render the form page)
     lockers = SmartLocker.query.all()
     return render_template('ReportLockerIssue.html', lockers=lockers)
-
 
 
 

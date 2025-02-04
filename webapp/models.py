@@ -36,19 +36,29 @@ class StudentStaff(db.Model, UserMixin):
             user_id = f"{prefix}{random_digits}"
             if not StudentStaff.query.get(user_id):
                 return user_id
-    
+
     def get_university_name(self):
         # Fetch the university name using the University_ID
         university = University.query.filter_by(University_ID=self.University_ID).first()
         return university.University_Name if university else 'Unknown'
+    
 
     def get_university_location(self):
         # Fetch the university location using the University_ID
         university = University.query.filter_by(University_ID=self.University_ID).first()
         return university.University_Location if university else 'Unknown'
 
+    def get_university_prefix(self):
+        # Fetch the university record using the University_ID
+        university = University.query.filter_by(University_ID=self.University_ID).first()
+
+        if university:
+            # Extract and return the prefix before 'UNI' from the University_ID
+            return university.University_ID.split('UNI')[0] if university.University_ID else 'Unknown'
+        return 'Unknown'
+
 # Parcel Manager Table
-class ParcelManager(db.Model):
+class ParcelManager(db.Model, UserMixin):
     __tablename__ = 'parcel_manager'
     Manager_ID = db.Column(db.String(15), primary_key=True)
     Manager_Name = db.Column(db.String(50), nullable=False)
@@ -56,6 +66,16 @@ class ParcelManager(db.Model):
     Manager_Password = db.Column(db.String(255), nullable=False)
     Manager_Contact = db.Column(db.String(20), nullable=False)
     Manager_Work_Branch = db.Column(db.String(20), nullable=False)
+
+    @staticmethod
+    def generate_manager_id():
+        while True:
+            prefix = 'MGR'  # Prefix for Manager IDs
+            random_digits = ''.join([str(random.randint(0, 9)) for _ in range(8)])  # 8 random digits
+            manager_id = f"{prefix}{random_digits}"  # Combine prefix and random digits
+            if not ParcelManager.query.get(manager_id):  # Check if the ID already exists
+                return manager_id
+
 
 # Smart Locker Table
 class SmartLocker(db.Model):
@@ -65,13 +85,25 @@ class SmartLocker(db.Model):
     Locker_Status = db.Column(db.String(15), nullable=False)  # Changed from Enum to String
 
 # Courier Table
-class Courier(db.Model):
+class Courier(db.Model, UserMixin):
     __tablename__ = 'courier'
     Courier_ID = db.Column(db.String(15), primary_key=True)
     Courier_Name = db.Column(db.String(50), nullable=False)
     Courier_Email = db.Column(db.String(30), nullable=False, unique=True)
     Courier_Password = db.Column(db.String(255), nullable=False)
     Courier_Contact = db.Column(db.String(20), nullable=False)
+
+    def get_id(self):
+        return str(self.Courier_ID) 
+
+    @staticmethod
+    def generate_courier_id():
+        while True:
+            prefix = 'COU' 
+            random_digits = ''.join([str(random.randint(0, 9)) for _ in range(8)])  # 8 random digits
+            courier_id = f"{prefix}{random_digits}"  # Combine prefix and random digits
+            if not Courier.query.get(courier_id):  # Check if the ID already exists
+                return courier_id
    
 
 # Delivery Table

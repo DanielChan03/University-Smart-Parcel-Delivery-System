@@ -15,11 +15,14 @@ def create_app():
     from .auth import auth
     from .admin import admin
     from .AdminAuth import admin_auth 
+    from .CourierAuth import courier_auth
+
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(admin, url_prefix='/admin')
     app.register_blueprint(admin_auth, url_prefix='/admin')
+    app.register_blueprint(courier_auth, url_prefix='/courier')
 
     # Import models and create tables
     from .models import StudentStaff, University, ParcelManager, SmartLocker, Courier, ParcelStatus, Parcel, Waitlist,Admin, Report  # Import all your models here
@@ -30,10 +33,11 @@ def create_app():
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'  # Default route for login
     login_manager.init_app(app)
+    
 
     @login_manager.user_loader
     def load_user(user_id):
-        from .models import StudentStaff, Admin
+        from .models import StudentStaff, Admin, Courier
 
         user = StudentStaff.query.get(user_id)
         if user:
@@ -43,6 +47,10 @@ def create_app():
         if admin:
             return admin
 
+        courier = Courier.query.get(user_id)
+        if courier:
+            return courier
+            
         return None
 
     return app

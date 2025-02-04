@@ -20,8 +20,10 @@ def create_parcel_manager(email, name, plain_password, contact, work_branch):
         # Hash the password
         hashed_password = generate_password_hash(plain_password, method='pbkdf2:sha256')
 
+        manager_id = ParcelManager.generate_manager_id()
         # Create the ParcelManager object
         manager = ParcelManager(
+            Manager_ID = manager_id,
             Manager_Name=name,
             Manager_Email=email,
             Manager_Password=hashed_password,
