@@ -15,6 +15,7 @@ def home():
 @views.route('/submit_feedback', methods=['GET', 'POST'])
 @login_required
 def submit_feedback():
+    feedbacks = session.get('feedbacks', {})
     if request.method == 'POST':
         content = request.form['content']
         feedback_type = request.form['feedback_type']
@@ -35,15 +36,13 @@ def submit_feedback():
             session['feedbacks'][user_id].append({
                 'name': user_name,  
                 'content': content,
-                'feedback_type': feedback_type
+                'feedback_type': feedback_type,
+                'admin_response': 'Not Responded'  # New field added
             })
 
             flash('Your feedback has been submitted successfully.', 'success')
 
-    return render_template('StudentStaff/StudentStaffFeedback.html')
-
-
-
+    return render_template('StudentStaff/StudentStaffFeedback.html', feedbacks=feedbacks)
 
 @views.route('/send_parcel', methods=['GET', 'POST'])
 @login_required

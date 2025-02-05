@@ -134,19 +134,20 @@ def respond_feedback(user_id, feedback_index):
     # Get the feedback item the admin will respond to
     feedback = feedbacks[str(user_id)][feedback_index]
 
-    # Handle response submission
     if request.method == 'POST':
         response_content = request.form['response']
         
-        # Update the feedback with a response
-        feedback['response'] = response_content
+        # Update the feedback with admin's response
+        feedback['admin_response'] = response_content  # Store the response
+
         flash('Response has been submitted successfully.', 'success')
 
         # Save the updated feedback back to session
         session['feedbacks'][str(user_id)][feedback_index] = feedback
+
         return redirect(url_for('admin.view_feedback'))  # Redirect back to feedback view page
     
-    return render_template('Admin/RespondFeedback.html', feedback=feedback, user_id=user_id, feedback_index=feedback_index)
+    return render_template('Admin/AdminRespondFeedback.html', feedback=feedback, user_id=user_id, feedback_index=feedback_index)
 
 
 # Add User

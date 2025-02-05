@@ -30,7 +30,7 @@
                             <td>{{ feedback['feedback_type'] }}</td>
                             <td>{{ feedback['content'] }}</td>
                             <td>
-                                <a href="{{ url_for('admin.view_feedback', user_id=user_id) }}" class="btn btn-primary">Respond</a>
+                                <a href="{{ url_for('admin.respond_feedback', user_id=user_id, feedback_index=loop.index0) }}" class="btn btn-primary">Respond</a>
                             </td>
                         </tr>
                     {% endfor %}

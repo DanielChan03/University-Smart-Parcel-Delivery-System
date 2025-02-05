@@ -12,28 +12,26 @@
     <div class="feedback-list">
         <h2>Feedback History</h2>
         <div id="feedbackContainer">
-            <div class="feedback-item">
-                <strong>General</strong>
-                <p>Great service, very satisfied!</p>
-                <small>Admin: Thank you for your feedback!</small>
-            </div>
-            <div class="feedback-item">
-                <strong>Complaint</strong>
-                <p>Delivery took longer than expected.</p>
-                <small>Admin: Apologies for the delay, we will improve our service.</small>
-            </div>
-            <div class="feedback-item pending">
-                <strong>Suggestion</strong>
-                <p>Would be great to have more delivery time slots.</p>
-                <small>Pending response...</small>
-            </div>
+            {% if feedbacks %}
+                {% for user_id, feedback_list in feedbacks.items() %}
+                    {% for feedback in feedback_list %}
+                        <div class="feedback-item {% if feedback.admin_response == 'Not Responded' %}pending{% endif %}">
+                            <strong>{{ feedback['feedback_type'] }}</strong>
+                            <p>{{ feedback['content'] }}</p>
+                            <small>Admin: {{ feedback['admin_response'] }}</small>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+                <p>No feedback submitted yet.</p>
+            {% endif %}
         </div>
     </div>
     
     <!-- Right: Feedback Form -->
     <div class="feedback-form">
         <h2>Submit Feedback</h2>
-        <form action="{{ url_for('views.submit_feedback') }}" method="POST">
+            <form action="{{ url_for('views.submit_feedback') }}" method="POST">
             <select name="feedback_type">
                 <option value="General">General</option>
                 <option value="Suggestion">Suggestion</option>
