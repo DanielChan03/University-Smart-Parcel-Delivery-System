@@ -2,26 +2,15 @@
 
 {% block title %}Assign Parcel to Courier{% endblock %}
 
-{% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='Couriercss/AssignParcelToCourier.css') }}">
-{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='ParcelManagercss/AssignParcelToCourier.css') }}">
+{% endblock %} 
 
 {% block content %}
 <div class="container">
   <!-- Parcel List Panel -->
   <div class="panel">
     <h2>Parcel List</h2>
-
-    <!-- Success/Error Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }}" role="alert">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
 
     <table>
       <thead>
@@ -44,7 +33,7 @@
           <td>{{ parcel.Destination }}</td>
           <td>Ready for Dispatch</td>
           <td class="actions">
-            <form method="POST" action="{{ url_for('assign.assign_parcel') }}">
+            <form method="POST" action="{{ url_for('parcel_manager.assign_parcel_to_courier') }}">
               <input type="hidden" name="parcel_id" value="{{ parcel.Parcel_ID }}">
               <select name="courier_id" required>
                 <option value="" disabled selected>-- Select a Courier --</option>
@@ -79,7 +68,6 @@
         <tr>
           <td>{{ courier.Courier_ID }}</td>
           <td>{{ courier.Courier_Name }}</td>
-          <td>{{ courier.parcels|length }}</td>
         </tr>
         {% endfor %}
       </tbody>
