@@ -213,6 +213,27 @@ def send_parcel():
         sender_university_name=sender.get_university_name()
     )
 
+@views.route('/track_parcel', methods=['GET', 'POST'])
+def track_parcel():
+    if request.method == 'POST':
+        parcel_id = request.form.get('parcel_id')
+
+        latest_status = ParcelStatus.query.filter_by(Parcel_ID=parcel_id) \
+                                          .order_by(ParcelStatus.Updated_At.desc()) \
+                                          .first()
+        if latest_status:
+            parcel_info = {
+                'parcel_id': latest_status.Parcel_ID,
+                'status_type': latest_status.Status_Type,
+                'updated_at': latest_status.Updated_At.strftime('%Y-%m-%d %H:%M:%S')  # 格式化时间
+            }
+            return render_template('StudentStaff/TrackParcel.html', parcel_info=parcel_info)
+        else:
+            return render_template('StudentStaff/TrackParcel.html', error="Parcel status not found.")
+
+    return render_template('StudentStaff/TrackParcel.html')
+
+
 @views.route('/report_locker_issue', methods=['GET', 'POST'])
 @login_required
 def report_locker_issue():

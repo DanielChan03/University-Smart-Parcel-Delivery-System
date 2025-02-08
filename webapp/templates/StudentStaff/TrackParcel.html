@@ -1,0 +1,36 @@
+{% extends "StudentStaff/base.html" %}
+
+{% block title %}Track Parcel - TrackIQ{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='StudentStaffcss/TrackParcel.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="track-parcel-container">
+    <h1>Track Your Parcel</h1>
+    
+    <!-- 查询表单 -->
+    <form method="POST" action="{{ url_for('views.track_parcel') }}">
+        <div class="form-group">
+            <label for="parcel_id">Enter Parcel ID:</label>
+            <input type="text" id="parcel_id" name="parcel_id" required>
+        </div>
+        <button type="submit" class="btn-track">Track</button>
+    </form>
+
+    <!-- 查询结果 -->
+    {% if parcel_info %}
+        <div class="parcel-info">
+            <h2>Parcel Details</h2>
+            <p><strong>Parcel ID:</strong> {{ parcel_info.parcel_id }}</p>
+            <p><strong>Status:</strong> {{ parcel_info.status_type }}</p>
+            <p><strong>Last Updated:</strong> {{ parcel_info.updated_at }}</p>
+        </div>
+    {% elif error %}
+        <div class="error-message">
+            <p>{{ error }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
