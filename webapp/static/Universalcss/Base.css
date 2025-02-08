@@ -11,8 +11,11 @@
     background-color: #49b2c6;
     display: flex;
     align-items: center;
-    justify-content: space-between; 
+    justify-content: space-between;
     padding: 1rem 2rem;
+    z-index: 1000;
+    position: relative;  /* Keep it above other elements */
+   
 }
 
 .logo {
@@ -66,8 +69,11 @@
     height: 100%;
     padding-top: 20px;
     padding-left: 10px;
+    z-index: 1001;
     transition: left 0.3s ease-in-out;
+
 }
+
 
 .sidebar ul {
     list-style-type: none;
@@ -153,9 +159,9 @@
     top: 10px;  /* Adjust top position */
     left: 50%;
     transform: translateX(-50%);  /* Center the message */
-    z-index: 1000;  /* Ensure it's above other elements */
     width: 80%;
     max-width: 600px;
+    z-index: 999;
     text-align: center;
 }
 
