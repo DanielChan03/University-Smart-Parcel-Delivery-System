@@ -160,4 +160,11 @@ def collect_parcel():
     #  deliveries = Delivery.query.filter_by(Courier_ID=current_user.Courier_ID).all()
      return render_template("Courier/CourierCollectParcel.html") # , deliveries=deliveries
 
+#View Parcel Manager List
+@courier.route('/view-managers',methods =['GET'])
+@login_required
+def courierViewManagerList():
+    return render_template('Courier/CourierViewManagerList.html')
+
+
 

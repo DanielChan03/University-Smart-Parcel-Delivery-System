@@ -102,5 +102,9 @@
   </div>
   <script src="{{ url_for('static', filename='CollectParcelScript.js') }}"></script>
   <!-- View Parcel Manager Button -->
-  <button class="view-parcel-manager" onclick="viewParcelManager()">View Parcel Manager</button>
+
+  <a href="{{ url_for('courier.courierViewManagerList') }}" class="view-parcel-manager">
+    View Parcel Manager
+  </a>
+  
 {% endblock %}
