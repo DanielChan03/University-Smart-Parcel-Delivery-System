@@ -42,7 +42,9 @@ def view_assigned_parcels():
     assigned_parcels = Parcel.query.filter_by(Delivery_ID=current_user.Courier_ID).all()
     return render_template("Courier/CourierAssignedParcels.html", parcels=assigned_parcels)
 
-# Update Parcel Status
+# Report Parcel
+from flask import redirect, url_for
+
 @courier.route('/report-parcel', methods=['GET', 'POST'])
 @login_required
 def report_parcel():
@@ -53,32 +55,38 @@ def report_parcel():
 
         if not parcel_id or not issue_description:
             flash("Parcel ID and issue description are required.", "danger")
-            return redirect(url_for("courier.report_parcel"))
+            return render_template("Courier/CourierReportDelivery.html")
 
         # Check if the parcel exists
         parcel = Parcel.query.filter_by(Parcel_ID=parcel_id).first()
         if not parcel:
             flash("Parcel ID not found. Please enter a valid Parcel ID.", "danger")
-            return redirect(url_for("courier.report_parcel"))
+            return render_template("Courier/CourierReportDelivery.html")
+
+         # Generate a unique Status_ID
+        new_status_id = f"REP{random.randint(100000, 999999)}"
+        while db.session.query(ParcelStatus).filter_by(Status_ID=new_status_id).first():
+            new_status_id = f"REP{random.randint(100000, 999999)}"  # Regenerate until unique
 
         # Create a new report
         new_report = ParcelStatus(
-            Status_ID=f"REP{random.randint(100000, 999999)}",
+            Status_ID=new_status_id,
             Parcel_ID=parcel_id,
             Status_Type="Reported - " + issue_type.capitalize(),
-            Updated_by=current_user.Courier_ID
+            Updated_by=current_user.Courier_ID,
+            Updated_At=datetime.now()
         )
         db.session.add(new_report)
 
-        # Update parcel status (assuming there's a column to track status)
-        parcel.Status = "Reported"  # Update status column in the Parcel table (if it exists)
+        # Update parcel status
+        parcel.Status = "Reported"
 
         db.session.commit()
 
         flash("Parcel issue reported successfully!", "success")
-        return redirect(url_for("courier.report_parcel"))
+        return redirect(url_for('courier.report_parcel'))  # Redirect to avoid resubmission
 
-    return render_template("Courier/CourierReportDelivery.html") 
+    return render_template("Courier/CourierReportDelivery.html")
 
 # Initialize notifications in the session if not already present
 def init_notifications():
