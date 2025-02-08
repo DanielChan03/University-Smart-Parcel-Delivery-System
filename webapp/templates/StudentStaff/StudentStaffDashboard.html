@@ -1,0 +1,50 @@
+{% extends "StudentStaff/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='StudentStaffcss/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Student Dashboard</h1>
+</div>
+
+<div class="dashboard-sections">
+    <!-- Welcome Message -->
+    <div class="welcome-card">
+        <h2>Welcome, {{ user.User_Name }}!</h2>
+        <p>Have a great day managing your parcels.</p>
+        <img src="{{ url_for('static', filename='admin_welcome.png') }}" alt="Welcome Image" class="welcome-image">
+    </div>
+
+    <!-- Notifications -->
+    <div class="notification-card">
+        <h2>Notifications</h2>
+        <ul>
+            {% for notification in notifications %}
+                <li>{{ notification.message }}</li>
+            {% else %}
+                <li>No new notifications.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="dashboard-sections">
+    <!-- Parcel Statistics -->
+    <div class="status-card">
+        <h2>Parcel Statistics</h2>
+        <p>Sent Parcels: {{ total_sent_parcels }}</p>
+        <p>Received Parcels: {{ total_received_parcels }}</p>
+        <p>Pending Parcels: {{ pending_parcels }}</p>
+    </div>
+
+    <!-- Feedback Statistics -->
+    <div class="feedback-card">
+        <h2>Feedback</h2>
+        <p>Unresolved Feedbacks: {{ not_responded_feedback }}</p>
+    </div>
+</div>
+{% endblock %}
