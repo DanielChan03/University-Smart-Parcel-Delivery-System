@@ -3,32 +3,35 @@
 {% block title %}Report Parcel Issue{% endblock %}
 
 {% block styles %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='Couriercss/CourierReportDelivery.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='Couriercss/CourierReport.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="panel">
-    <h2>Report Delivery Issue</h2>
-    <form action="{{ url_for('courier.report_parcel') }}" method="POST">
-      <!-- Parcel ID -->
-      <label for="parcel_id">Parcel ID:</label>
-      <input type="text" id="parcel_id" name="parcel_id" placeholder="Enter Parcel ID" required>
+  <div class="container">
+    <div class="panel">
+      <h2>Report Delivery Issue</h2>
+      <form class="report-form" action="{{ url_for('courier.report_parcel') }}" method="POST">
+        <!-- Parcel ID -->
+        <label for="parcel_id">Parcel ID:</label>
+        <input type="text" id="parcel_id" name="parcel_id" placeholder="Enter Parcel ID" required>
 
-      <!-- Issue Type -->
-      <label>Issue Type:</label>
-      <label><input type="radio" name="issue_type" value="damaged" required> Damaged Parcel</label>
-      <label><input type="radio" name="issue_type" value="lost"> Lost Parcel</label>
-      <label><input type="radio" name="issue_type" value="delayed"> Delayed Delivery</label>
-      <label><input type="radio" name="issue_type" value="other"> Other</label>
+        <!-- Issue Type -->
+        <label>Issue Type:</label>
+        <div class="issue-type">
+          <label><input type="radio" name="issue_type" value="damaged" required> Damaged Parcel</label>
+          <label><input type="radio" name="issue_type" value="lost"> Lost Parcel</label>
+          <label><input type="radio" name="issue_type" value="delayed"> Delayed Delivery</label>
+          <label><input type="radio" name="issue_type" value="other"> Other</label>
+        </div>
 
-      <!-- Issue Description -->
-      <label for="issue_description">Issue Description:</label>
-      <textarea id="issue_description" name="issue_description" placeholder="Describe the issue..." required></textarea>
+        <!-- Issue Description -->
+        <label for="issue_description">Issue Description:</label>
+        <textarea id="issue_description" name="issue_description" placeholder="Describe the issue..." required></textarea>
 
-      <!-- Submit Button -->
-      <button type="submit">Submit Report</button>
-    </form>
+        <!-- Submit Button -->
+        <button type="submit">Submit Report</button>
+      </form>
+    </div>
   </div>
-</div>
 {% endblock %}
+
