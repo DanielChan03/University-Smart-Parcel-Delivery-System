@@ -41,8 +41,8 @@ def parcel_manager_dashboard():
         locker_status = locker_status
     )
 
-@parcel_manager.route('/assign_parcel_to_courier', methods=['GET', 'POST'])
-def assign_parcel_to_courier():
+@parcel_manager.route('/organize-parcel', methods=['GET', 'POST'])
+def organize():
     if request.method == 'POST':
         parcel_id = request.form.get('parcel_id')
         courier_id = request.form.get('courier_id')

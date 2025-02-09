@@ -115,7 +115,7 @@ class Courier(db.Model, UserMixin):
 class Delivery(db.Model):
     __tablename__ = 'delivery'
     Delivery_ID = db.Column(db.String(15), primary_key=True)
-    Courier_ID = db.Column(db.String(15), db.ForeignKey('courier.Courier_ID'), nullable= True)
+    Courier_ID = db.Column(db.String(15), db.ForeignKey('courier.Courier_ID'), nullable= False)
     Deliver_Date = db.Column(db.Date, nullable= True )  # Date when the parcel is collected by the courier
     Arrival_Date = db.Column(db.Date, nullable= True )  # Date when the parcel arrives at the destination
   
@@ -144,10 +144,10 @@ class Parcel(db.Model):
     Receive_Locker_ID = db.Column(db.String(15), db.ForeignKey('smart_locker.Locker_ID'),  nullable=True)  # Locker ID for receiving the parcel (nullable)
     Sender_User_ID = db.Column(db.String(15), db.ForeignKey('student_staff.User_ID'), nullable=False)  # User ID of the sender
     Recipient_User_ID = db.Column(db.String(15), db.ForeignKey('student_staff.User_ID'), nullable=False)  # User ID of the recipient
-    Delivery_ID = db.Column(db.String(15), db.ForeignKey('delivery.Delivery_ID'), nullable=False)  # Current delivery of the parcel
-    Send_Manager_ID = db.Column(db.String(15), db.ForeignKey('parcel_manager.Manager_ID'), nullable=True)  # Parcel manager handling the send process
-    Receive_Manager_ID = db.Column(db.String(15), db.ForeignKey('parcel_manager.Manager_ID'), nullable=True)  # Parcel manager handling the receive process
-    Parcel_Received_at = db.Column(db.DateTime)  # Date when the receiver collected the parcel (nullable)
+    Delivery_ID = db.Column(db.String(15), db.ForeignKey('delivery.Delivery_ID'), nullable=True)  # Current delivery of the parcel
+    Send_Manager_ID = db.Column(db.String(15), db.ForeignKey('parcel_manager.Manager_ID'), nullable=False)  # Parcel manager handling the send process
+    Receive_Manager_ID = db.Column(db.String(15), db.ForeignKey('parcel_manager.Manager_ID'), nullable=False)  # Parcel manager handling the receive process
+    Parcel_Received_at = db.Column(db.DateTime, nullable=True)  # Date when the receiver collected the parcel (nullable)
     Parcel_Sent_at = db.Column(db.DateTime, nullable=False)  # Date when the parcel was sent by the sender
 
     # Relationships

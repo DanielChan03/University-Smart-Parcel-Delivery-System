@@ -77,141 +77,112 @@ def submit_feedback():
     return render_template('StudentStaff/StudentStaffFeedback.html', feedbacks=feedbacks)
 
 
-@views.route('/send_parcel', methods=['GET', 'POST'])
-@login_required
-def send_parcel():
-    # Get all universities for the dropdown
-    universities = University.query.all()
-    sender = StudentStaff.query.filter_by(User_ID=current_user.User_ID).first()
-    sender_university_id = sender.University_ID  # Get sender's university ID
-
+@parcel_manager.route('/assign_parcel_to_courier', methods=['GET', 'POST'])
+def assign_parcel_to_courier():
     if request.method == 'POST':
-        sender_user_id = request.form['sender_user_id']
-        receiver_identifier = request.form['receiver_identifier']
-        receiver_university_id = request.form['receiver_university']
+        parcel_id = request.form.get('parcel_id')
+        courier_id = request.form.get('courier_id')
 
-        # Ensure sender and receiver are different
-        if str(receiver_identifier) == str(sender_user_id):
-            flash('You cannot send a parcel to yourself.', 'error')
-            return redirect(url_for('views.send_parcel'))
+        if not parcel_id or not courier_id:
+            flash("Please select both a parcel and a courier!", "error")
+            return redirect(url_for('parcel_manager.assign_parcel_to_courier'))
 
-        # Ensure sender and receiver are from different universities
-        if str(receiver_university_id) == str(sender_university_id):
-            flash('Receiver cannot be from the same university as the sender.', 'error')
-            return redirect(url_for('views.send_parcel'))
+        parcel = Parcel.query.get(parcel_id)
+        courier = Courier.query.get(courier_id)
 
-        # Find receiver (by name or user ID)
-        receiver = StudentStaff.query.filter_by(User_Name=receiver_identifier, University_ID=receiver_university_id).first()
-        if not receiver:
-            receiver = StudentStaff.query.filter_by(User_ID=receiver_identifier, University_ID=receiver_university_id).first()
+        if parcel and courier:
+            # Check if the parcel already has a delivery assigned
+            if parcel.Delivery_ID:
+                # Update the existing delivery record with the new courier_id
+                delivery = Delivery.query.get(parcel.Delivery_ID)
+                if delivery:
+                    delivery.Courier_ID = courier.Courier_ID
+                    db.session.commit()
+                    flash(f"Parcel {parcel_id} reassigned to Courier {courier.Courier_ID} successfully!", "success")
+                else:
+                    flash(f"Delivery record not found for Parcel {parcel_id}!", "error")
+            else:
+                # Create a new delivery record
+                new_delivery = Delivery(
+                    Delivery_ID=f"D_{parcel_id}",  # Unique delivery ID (Example format)
+                    Courier_ID=courier.Courier_ID,  # Assign to selected courier
+                    Deliver_Date=None,  # Delivery date not set yet
+                    Arrival_Date=None   # Arrival date not set yet
+                )
+                db.session.add(new_delivery)
+                db.session.commit()
 
-        if receiver is None:
-            flash('Receiver not found in the selected university. Please check the name or user ID.', 'error')
-            return redirect(url_for('views.send_parcel'))
+                # Assign the delivery to the parcel
+                parcel.Delivery_ID = new_delivery.Delivery_ID
+                db.session.commit()
 
-        receiver_user_id = receiver.User_ID  # Receiver's User ID
+                flash(f"Parcel {parcel_id} assigned to Courier {courier.Courier_ID} successfully!", "success")
 
-        # Find an available locker at the sender's university
-        sender_university_prefix = sender.get_university_prefix()
-        available_locker = SmartLocker.query.filter(
-            SmartLocker.Locker_Status == 'Available',
-            SmartLocker.Locker_ID.like(f"{sender_university_prefix}LOC%")
-        ).first()
+            # Function to generate a unique Status_ID
+            def generate_unique_status_id():
+                while True:
+                    status_id = f"PAR{''.join(random.choices('0123456789', k=8))}"
+                    if not ParcelStatus.query.filter_by(Status_ID=status_id).first():
+                        return status_id
 
-        if not available_locker:
-            flash('No available lockers. Please try again later.', 'error')
-            return redirect(url_for('views.send_parcel'))
+            # Assign a unique Status_ID
+            status_id = generate_unique_status_id()
+            # Update the parcel status to "Assigned to Courier"
+            new_status = ParcelStatus(
+                Status_ID=status_id,
+                Parcel_ID=parcel.Parcel_ID,
+                Status_Type="Assigned to Courier",  # New status
+                Updated_by=current_user.Manager_ID,
+                Updated_At=datetime.utcnow()
+            )
+            db.session.add(new_status)
+            db.session.commit()
 
-        # Locker found, update the status
-        send_locker_id = available_locker.Locker_ID
-        available_locker.Locker_Status = 'Occupied'
-        db.session.commit()
+            # Add a notification for the courier
+            if 'courier_notifications' not in session:
+                session['courier_notifications'] = {}
 
-        # Generate a unique Delivery_ID
-        delivery_id = f"DEL{''.join(random.choices('0123456789', k=8))}"
-        while Delivery.query.filter_by(Delivery_ID=delivery_id).first():
-            delivery_id = f"DEL{''.join(random.choices('0123456789', k=8))}"
+            courier_notifications = session['courier_notifications']
+            if courier_id not in courier_notifications:
+                courier_notifications[courier_id] = []
 
-        # Create a new delivery entry
-        new_delivery = Delivery(
-            Delivery_ID=delivery_id,
-            Courier_ID=None,
-            Deliver_Date=None,
-            Arrival_Date=None
-        )
-        db.session.add(new_delivery)
-        db.session.commit()
+            courier_notifications[courier_id].append({
+                'parcel_id': parcel_id,
+                'message': f"Parcel {parcel_id} has been assigned to you.",
+                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
 
-        # Get sender's manager
-        sender_university_name = sender.get_university_name()
-        send_manager = ParcelManager.query.filter_by(Manager_Work_Branch=sender_university_name).first()
+            session['courier_notifications'] = courier_notifications
+            session.modified = True
 
-        if send_manager is None:
-            flash('No manager found for the sender university. Please contact support.', 'error')
-            return redirect(url_for('views.send_parcel'))
+        else:
+            flash("Invalid parcel or courier selected!", "error")
 
-        # Get receiver's university name
-        receiver_university = University.query.get(receiver_university_id)
-        receiver_university_name = receiver_university.University_Name
+        return redirect(url_for('parcel_manager.assign_parcel_to_courier'))
 
-        # Get receiver's manager
-        receive_manager = ParcelManager.query.filter_by(Manager_Work_Branch=receiver_university_name).first()
+    # Get all parcels with status "Registered"
+    parcels = db.session.query(Parcel).join(ParcelStatus).filter(ParcelStatus.Status_Type == 'Registered').all()
+    
+    # Fetch all couriers
+    couriers = Courier.query.all()
 
-        if receive_manager is None:
-            flash('No manager found for the receiver university. Please contact support.', 'error')
-            return redirect(url_for('views.send_parcel'))
+    # Prepare the data to be passed to the template
+    parcel_data = []
+    for parcel in parcels:
+        sender_name = parcel.sender.User_Name if parcel.sender else 'Unknown'
+        recipient_name = parcel.recipient.User_Name if parcel.recipient else 'Unknown'
+        destination = parcel.recipient.get_university_name() if parcel.recipient else 'Unknown'
+        status = 'Registered'  # Since we filtered by "Registered" status
 
-        # Generate a unique Parcel_ID
-        parcel_id = f"PAR{''.join(random.choices('0123456789', k=8))}"
-        while Parcel.query.filter_by(Parcel_ID=parcel_id).first():
-            parcel_id = f"PAR{''.join(random.choices('0123456789', k=8))}"    
+        parcel_data.append({
+            'Parcel_ID': parcel.Parcel_ID,
+            'Sender_Name': sender_name,
+            'Recipient_Name': recipient_name,
+            'Destination': destination,
+            'Status': status
+        })
 
-        # Create a new parcel entry
-        new_parcel = Parcel(
-            Parcel_ID=parcel_id,
-            Sender_User_ID=sender_user_id,
-            Recipient_User_ID=receiver_user_id,
-            Send_Locker_ID=send_locker_id,
-            Receive_Locker_ID=None,
-            Delivery_ID=delivery_id,
-            Parcel_Sent_at=datetime.utcnow(),
-            Send_Manager_ID=send_manager.Manager_ID,
-            Receive_Manager_ID=receive_manager.Manager_ID
-        )
-        db.session.add(new_parcel)
-        db.session.commit()
-
-        # Generate a unique Status_ID (3 random uppercase letters + 8 random digits)
-        status_id = f"{''.join(random.choices(string.ascii_uppercase, k=3))}{''.join(random.choices('0123456789', k=8))}"
-        while ParcelStatus.query.filter_by(Status_ID=status_id).first():
-            status_id = f"{''.join(random.choices(string.ascii_uppercase, k=3))}{''.join(random.choices('0123456789', k=8))}"
-
-        # Create the parcel status entry
-        new_status = ParcelStatus(
-            Status_ID=status_id,
-            Parcel_ID=parcel_id,
-            Status_Type="Registered",
-            Updated_by=sender_user_id,  # The sender
-            Updated_At=datetime.utcnow()
-        )
-        db.session.add(new_status)
-        db.session.commit()
-
-        # Notify the sender
-        if 'notifications' not in session:
-            session['notifications'] = []
-        session['notifications'].append(f"New parcel sent! Tracking Number: {parcel_id}. Please place it in Locker ID: {send_locker_id}.")
-        session.modified = True
-
-        flash(f'Your parcel has been sent. Please place it in Locker ID: {send_locker_id}.', 'success')
-        return redirect(url_for('views.send_parcel'))
-
-    return render_template(
-        'StudentStaff/SendParcel.html',
-        user=sender,
-        universities=universities,
-        sender_university_name=sender.get_university_name()
-    )
+    return render_template('ParcelManager/AssignParcelToCourier.html', parcels=parcel_data, couriers=couriers)
 
 @views.route('/track_parcel', methods=['GET', 'POST'])
 def track_parcel():
