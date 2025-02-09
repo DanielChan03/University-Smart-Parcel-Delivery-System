@@ -1,0 +1,53 @@
+{% extends "ParcelManager/ParcelManagerBase.html" %}
+
+{% block title %}Log Arrival Parcel{% endblock %}
+
+{% block styles %}
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'ParcelManagercss/ParcelManagerLogArrivalParcel.css')}}">
+    
+{% endblock %}
+
+{% block content %}
+
+    <div class="log-arrival-parcel-container">
+        <h3 class="form-title">Log Arrival Parcel</h3>
+
+        <table class="log-arrival-parcel-table">
+            <thead>
+                <tr>
+                    <th>Parcel ID</th>
+                    <th>Courier ID</th>
+                    <th>Courier Name</th>
+                    <th>Recipient ID</th>
+                    <th>Recipient Name</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for parcel in parcels %}
+                <form method="POST" action="{{ url_for('parcel_manager.log_arrival_parcel') }}">
+                    <tr>
+                        <td>{{ parcel.Parcel_ID }}</td>
+                        <td>{{ parcel.delivery.Courier_ID }}</td>
+                        <td>{{ parcel.delivery.courier.Courier_Name }}</td>
+                        <td>{{ parcel.recipient.User_ID }}</td>
+                        <td>{{ parcel.recipient.User_Name }}</td>
+                        <td>{{ parcel.sender.university.University_Name }}</td>
+                        <td>
+                            <select name="Update_Status" class="status-select">
+                                <option disabled selected></option>
+                                <option value="Verified">Verified</option>
+                                <option value="Missing">Missing</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <input type="hidden" name="Parcel_ID" value="{{ parcel.Parcel_ID }}">
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="update-button">Submit Verification</button>
+    </div>
+
+{% endblock %}
