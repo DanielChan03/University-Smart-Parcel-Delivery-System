@@ -1,211 +1,179 @@
-/* General Styles */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  margin: 0;
-  padding: 0;
+{% extends "Courier/CourierBase.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='Couriercss/CourierNotifications.css') }}">
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="panel">
+      <h2>Notifications</h2>
+      <div class="notification-section">
+        <div class="notification-list" id="notification-list">
+          <!-- Notifications will be dynamically loaded here -->
+        </div>
+        <div class="notification-details" id="notification-details" style="display: none;">
+          <h3>Notification Details</h3>
+          <div id="notification-content">
+            <!-- Notification content will be loaded here -->
+          </div>
+          <div class="notification-actions">
+            <button id="back-button" class="btn-secondary">Back</button>
+            <button id="reply-button" class="btn-primary">Reply</button>
+          </div>
+          <div class="reply-form" id="reply-form" style="display: none;">
+            <textarea id="reply-message" placeholder="Type your reply here..."></textarea>
+            <button id="send-reply-button" class="btn-primary">Send Reply</button>
+          </div>
+        </div>
+        <div class="send-notification">
+          <h3>Send Notification</h3>
+          <form id="send-notification-form">
+            <input type="text" id="recipient-id" placeholder="Recipient ID" required>
+            <input type="text" id="notification-title" placeholder="Title" required>
+            <textarea id="notification-message" placeholder="Message" required maxlength="150" oninput="updateCharCount()"></textarea>
+<p id="charCount">150 characters remaining</p>
+            <button type="submit" class="btn-primary">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentNotificationId = null; 
+    
+    function truncateMessage(message, length = 50) {
+      if (message.length > length) {
+        return `${message.substring(0, length)}...`;
+      }
+      return message;
+    }
+    
+    async function fetchNotifications() {
+    const response = await fetch('/courier/get-notifications');
+    const data = await response.json();
+    if (data.success) {
+        const notificationList = document.getElementById('notification-list');
+        
+        // Sort notifications by time in descending order (latest first)
+        data.notifications.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+        notificationList.innerHTML = data.notifications.map(notification => `
+          <div class="notification-item ${notification.is_read ? '' : 'unread'}" data-id="${notification.id}">
+            <div class="title">${notification.title}</div>
+            <div class="message">${truncateMessage(notification.message)}</div>
+            <div class="time">${notification.sender_email}, ${notification.time}</div>
+          </div>
+        `).join('');
+    }
 }
 
-.container {
-  max-width: 1100px;
-  margin: 20px auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
+    // Function to show notification details and hide send notification form
+document.getElementById('notification-list').addEventListener('click', async (event) => {
+    const notificationItem = event.target.closest('.notification-item');
+    if (notificationItem) {
+        const notificationId = notificationItem.dataset.id;
+        currentNotificationId = notificationId; // Store the notification ID
 
-.notification-content {
-  flex-grow: 1; /* Pushes everything else down */
-  overflow-y: auto; /* Adds scrolling if needed */
-}
+        await fetch(`/courier/mark-notification-read/${notificationId}`, { method: 'POST' });
+        notificationItem.classList.remove('unread');
 
-h2, h3 {
-  font-size: 22px;
-  color: #222;
-  margin-bottom: 15px;
-  text-align: center;
-}
+        // Fetch and display notification details
+        const response = await fetch(`/courier/get-notification/${notificationId}`);
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('notification-content').innerHTML = `
+                <div class="title"><strong>Subject:</strong> <strong>${data.notification.title}</strong></div>
+    <br>
+    <div class="message-time-wrapper">
+    <div class="message">${data.notification.message.replace(/\n/g, '<br>')}</div>
+    <br>
+    <div class="time">${data.notification.sender_email}, ${data.notification.time}</div>
+            `;
 
-/* Notification Section */
-.notification-section {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
+            // Hide Send Notification form, Show Notification Details
+            document.querySelector('.send-notification').style.display = 'none';
+            document.getElementById('notification-details').style.display = 'block';
+        }
+    }
+});
 
-.notification-list, .send-notification, .notification-details {
-  flex: 1;
-  min-width: 320px;
-  padding: 20px;
-  background: #fafafa;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
+// Handle Back button click to return to Send Notification
+document.getElementById('back-button').addEventListener('click', () => {
+    document.getElementById('notification-details').style.display = 'none';
+    document.querySelector('.send-notification').style.display = 'block';
+});
 
-.notification-list {
-  max-height: 400px;
-  overflow-y: auto;
-}
 
-.notification-item {
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
+    document.getElementById('reply-button').addEventListener('click', () => {
+      document.getElementById('reply-form').style.display = 'block';
+    });
 
-.notification-item:hover {
-  background-color: #f1f1f1;
-  transform: translateX(5px);
-}
+    document.getElementById('send-reply-button').addEventListener('click', async () => {
+      const replyMessage = document.getElementById('reply-message').value;
+      if (!currentNotificationId || !replyMessage) {
+        alert('Please enter a reply message.');
+        return;
+      }
+      const response = await fetch(`/courier/reply-notification/${currentNotificationId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reply_message: replyMessage })
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert('Reply sent successfully!');
+        document.getElementById('reply-form').style.display = 'none';
+        document.getElementById('reply-message').value = '';
+      } else {
+        alert(data.message);
+      }
+    });
 
-.notification-item:last-child {
-  border-bottom: none;
-}
+    document.getElementById('send-notification-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const recipientId = document.getElementById('recipient-id').value;
+      const title = document.getElementById('notification-title').value;
+      const message = document.getElementById('notification-message').value;
+      const response = await fetch('/courier/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipient_id: recipientId, title, message })
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert('Notification sent successfully!');
+        fetchNotifications();
+      } else {
+        alert(data.message);
+      }
+    });
+    
+    fetchNotifications();
 
-.notification-item.unread {
-  background-color: #e0f2ff;
-  font-weight: bold;
-}
+    function updateCharCount() {
+    let textarea = document.getElementById("notification-message");
+    let charCount = document.getElementById("charCount");
 
-.notification-item .title {
-  font-weight: bold;
-  color: #333;
-}
+    let text = textarea.value;
 
-.notification-item .message {
-  color: #555;
-  margin-top: 5px;
-}
+    // Count actual characters + give Enter ('\n') a weight of 10 characters
+    let enterCount = (text.match(/\n/g) || []).length; // Count newlines
+    let adjustedCount = text.length + enterCount * 9; // Each Enter already counts as 1, so add 9 more
 
-.message-time-wrapper {
-  display: flex;
-  flex-direction: column; /* Stack message and time */
-}
+    // Enforce max length by trimming excess characters
+    while (adjustedCount > 150) {
+        text = text.slice(0, -1); // Remove last character
+        enterCount = (text.match(/\n/g) || []).length; // Recalculate newlines
+        adjustedCount = text.length + enterCount * 9;
+    }
 
-.time {
-  align-self: flex-end; /* Aligns the time to the right */
-  color: #777;
-  font-size: 0.85rem;
-  margin-top: 10px;
-}
+    textarea.value = text; // Update textarea with trimmed text
 
-/* Notification Details */
-.notification-details {
-  word-wrap: break-word; /* Break long words */
-  overflow-wrap: break-word; /* Ensure long words break */
-  white-space: normal; /* Allow text wrapping */
-  max-width: 100%; /* Prevent text from overflowing */
-  display: none;
-  padding: 20px;
-  flex-direction: column;
-  height: 100%; /* Ensures full height */
-  min-height: 300px; /* Adjust as needed */
+    // Display remaining character count
+    let remaining = 150 - adjustedCount;
+    charCount.textContent = remaining + " characters remaining";
 }
-
-.notification-actions {
-  margin-top: auto;  /* Push buttons to bottom */
-  display: flex;
-  justify-content: space-between; /* Space buttons apart */
-  padding-top: 100px ;
-}
-
-.notification-actions button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: 0.3s;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn-secondary {
-  background-color: #ccc;
-  color: #333;
-}
-
-.btn-secondary:hover {
-  background-color: #bbb;
-}
-
-/* Reply Form */
-.reply-form {
-  margin-top: 15px;
-}
-
-.reply-form textarea {
-  width: 100%;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  resize: vertical;
-}
-
-#send-reply-button {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-#send-reply-button:hover {
-  background-color: #218838;
-}
-
-/* Send Notification */
-.send-notification form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 15px;
-  border-radius: 8px;
-}
-
-.send-notification input, .send-notification textarea {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.send-notification textarea {
-  resize: vertical;
-  height: 100px;
-}
-
-.send-notification button {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.send-notification button:hover {
-  background-color: #0056b3;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .notification-section {
-    flex-direction: column;
-  }
-}
+  </script>
+{% endblock %}
