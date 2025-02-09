@@ -3,6 +3,8 @@ from flask_login import current_user, login_required
 from .models import  Parcel, ParcelStatus, Waitlist, ParcelManager, Courier, SmartLocker, Delivery, db
 from werkzeug.security import generate_password_hash
 import random
+import string
+from datetime import datetime  # Import the datetime class
 
 parcel_manager = Blueprint('parcel_manager', __name__)
 
@@ -79,6 +81,43 @@ def assign_parcel_to_courier():
                 db.session.commit()
 
                 flash(f"Parcel {parcel_id} assigned to Courier {courier.Courier_ID} successfully!", "success")
+            # Function to generate a unique Status_ID
+            def generate_unique_status_id():
+                while True:
+                    status_id = f"{''.join(random.choices(string.ascii_uppercase, k=3))}{''.join(random.choices('0123456789', k=8))}"
+                    if not ParcelStatus.query.filter_by(Status_ID=status_id).first():
+                        return status_id
+
+            # Assign a unique Status_ID
+            status_id = generate_unique_status_id()
+            # Update the parcel status to "Assigned to Courier"
+            new_status = ParcelStatus(
+                Status_ID=status_id,
+                Parcel_ID=parcel.Parcel_ID,
+                Status_Type="Assigned to Courier",  # Or "Out for Delivery"
+                Updated_by=current_user.Manager_ID,
+                Updated_At=datetime.utcnow()
+            )
+            db.session.add(new_status)
+            db.session.commit()
+
+            # Add a notification for the courier
+            if 'courier_notifications' not in session:
+                session['courier_notifications'] = {}
+
+            courier_notifications = session['courier_notifications']
+            if courier_id not in courier_notifications:
+                courier_notifications[courier_id] = []
+
+            courier_notifications[courier_id].append({
+                'parcel_id': parcel_id,
+                'message': f"Parcel {parcel_id} has been assigned to you.",
+                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
+
+            session['courier_notifications'] = courier_notifications
+            session.modified = True
+
         else:
             flash("Invalid parcel or courier selected!", "error")
 
@@ -106,5 +145,5 @@ def assign_parcel_to_courier():
             'Status': status
         })
 
-    return render_template('ParcelManager/AssignParcelToCourier.html', parcels=parcel_data, couriers=couriers) 
+    return render_template('ParcelManager/AssignParcelToCourier.html', parcels=parcel_data, couriers=couriers)
 
