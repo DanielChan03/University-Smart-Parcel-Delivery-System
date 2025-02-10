@@ -50,40 +50,71 @@ def organize_parcel():
     deliveries = Delivery.query.all()
     couriers = Courier.query.all()
 
+    min_date = datetime.today().strftime('%Y-%m-%d')
+
     if request.method == 'POST':
         selectedParcel = request.form.getlist('selected_parcels[]')
-        courierID = request.form.get('courier_id')
         deliveryDate = request.form.get('delivery_date')
+        courierID = request.form.get('courier_id')
 
-        if selectedParcel and courierID and deliveryDate:
-            delivery_id = 'D_' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-            newDelivery = Delivery(Delivery_ID = delivery_id,
-                                   Courier_ID = courierID,
-                                   Deliver_Date = datetime.strptime(deliveryDate, '%Y-%m-%d')
-                                    )
+        if selectedParcel and deliveryDate and courierID:
+            # Generate a unique delivery ID
+            def generate_unique_delivery_id():
+                while True:
+                    delivery_id = 'DEL' + ''.join(random.choices('0123456789', k=8))
+                    existing_delivery = Delivery.query.filter_by(Delivery_ID=delivery_id).first()
+                    if not existing_delivery:  # Ensure the ID is unique
+                        return delivery_id
 
-            for parcelID in selectedParcel:
-                parcel = Parcel.query.filter_by(Parcel_ID = parcelID).first()
-                if parcel:
-                    newDelivery.parcels.append(parcel)
+            # Inside your function where you create a new delivery
+            delivery_id = generate_unique_delivery_id()
+
+            # Create a new delivery
+            newDelivery = Delivery(
+                Delivery_ID=delivery_id,
+                Courier_ID=courierID,
+                Deliver_Date=datetime.strptime(deliveryDate, '%Y-%m-%d')
+            )
 
             db.session.add(newDelivery)
-            db.session.commit()
+            db.session.flush()  # Ensure newDelivery.Delivery_ID is available before linking parcels
 
+            for parcelID in selectedParcel:
+                parcel = Parcel.query.filter_by(Parcel_ID=parcelID).first()
+                if parcel:
+                    newDelivery.parcels.append(parcel)  # Link parcel to delivery
+
+                    # Ensure each parcel has a unique status ID
+                    status_id = f"{''.join(random.choices(string.ascii_uppercase, k=3))}{''.join(random.choices('0123456789', k=8))}"
+                    while ParcelStatus.query.filter_by(Status_ID=status_id).first():
+                        status_id = f"{''.join(random.choices(string.ascii_uppercase, k=3))}{''.join(random.choices('0123456789', k=8))}"
+
+                    # Update parcel status
+                    new_status = ParcelStatus(
+                        Status_ID=status_id,
+                        Parcel_ID=parcel.Parcel_ID,
+                        Status_Type="Ready to Pickup",
+                        Updated_by=current_user.Manager_ID,
+                        Updated_At=datetime.utcnow()
+                    )
+                    db.session.add(new_status)
+
+            db.session.commit()
             flash(f"New delivery created with ID {delivery_id}!", category="success")
-    
         else:
-            flash("No parcel selected!", category="error")
+            flash("No parcel selected, delivery date missing, or courier not assigned!", category="error")
 
         return redirect(url_for('parcel_manager.organize_parcel'))
 
     return render_template(
         'ParcelManager/ParcelManagerOrganizeParcel.html',
-        parcels = parcels,
-        statuses = statuses,
-        deliveries = deliveries,
-        couriers = couriers
-        )
+        parcels=parcels,
+        statuses=statuses,
+        deliveries=deliveries,
+        couriers=couriers,
+        min_date=min_date
+    )
+
 
 @parcel_manager.route('/update_parcel_status', methods=['GET', 'POST'])
 def update_parcel_status():
