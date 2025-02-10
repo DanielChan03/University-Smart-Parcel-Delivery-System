@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Admin Dashboard - TrackIQ{% endblock %}</title>
+    <title>{% block title %}Admin Dashboard - TrackManager{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='Universalcss/Base.css') }}">
     <link
         rel="stylesheet"
@@ -23,7 +23,7 @@
             </svg>
         </button>
         <nav class="navbar">
-            <a href="#">Dashboard</a>
+            <a href="{{ url_for('parcel_manager.parcel_manager_dashboard') }}">Dashboard</a>
             <a href="{{ url_for('parcel_manager.organize_parcel') }}">Organize Parcel</a>
             <a href="{{ url_for('parcel_manager.update_parcel_status')}}">Update Parcel Status</a>
             <a href="{{ url_for('parcel_manager.assign_parcel_to_locker') }}">Assign Parcel to Locker</a>
