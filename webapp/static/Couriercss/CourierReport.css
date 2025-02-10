@@ -145,3 +145,22 @@ body {
     font-size: 1.2rem;
   }
 }
+
+.view-history-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #dc2510; /* Green color */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000; /* Ensure it's above other elements */
+}
+
+.view-history-button:hover {
+  background-color: #ab1313; /* Darker green on hover */
+}
