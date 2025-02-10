@@ -1,0 +1,54 @@
+{% extends "Courier/CourierBase.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='Couriercss/CourierManageStatus.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Manage Parcel Status</h1>
+
+        <table class="parcel-table">
+            <thead>
+                <tr>
+                    <th>Parcel ID</th>
+                    <th>Sender Name</th>
+                    <th>Recipient</th>
+                    <th>Destination</th>
+                    <th>Current Status</th>
+                    <th>Manage Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for parcel in parcels %}
+                <tr>
+                    <td>{{ parcel.Parcel_ID }}</td>
+                    <td>{{ parcel.Sender_Name }}</td>
+                    <td>{{ parcel.Recipient_Name }}</td>
+                    <td>{{ parcel.Destination }}</td>
+                    <td>{{ parcel.Current_Status }}</td>
+                    <td>
+                        <!-- Add a form for each parcel -->
+                        <form method="POST" action="{{ url_for('courier.manage_parcel_status') }}" class="status-form">
+                            <input type="hidden" name="Parcel_ID" value="{{ parcel.Parcel_ID }}">
+                            <select name="Update_Status" class="status-select"
+                            {% if parcel.Current_Status == 'Verified' or parcel.Current_Status.startswith('Reported - ') %} disabled {% endif %} 
+                    required>
+                                <option disabled selected>Select Status</option>
+                                <option value="Parcel Outgoing">Parcel Outgoing</option>
+                                <option value="In Transit">In Transit</option>
+                                <option value="Parcel Arrived at University">Parcel Arrived at University</option>
+                                <option value="Parcel Handed Over to Parcel Manager">Parcel Handed Over to Parcel Manager</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button type="submit" class="update-button">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
