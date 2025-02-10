@@ -107,6 +107,26 @@ def courier_dashboard():
         messages_received=messages_received
     )
 
+
+# Route for the courier profile page
+@courier.route('/courier/profile')
+@login_required
+def courier_profile():
+    # Ensure the user is a courier
+    if not isinstance(current_user, Courier):
+        return redirect(url_for('unauthorized'))  # Redirect if not a courier
+
+    # Retrieve the courier's data from the database
+    courier_data = {
+        'Courier_ID': current_user.Courier_ID,
+        'Courier_Name': current_user.Courier_Name,
+        'Courier_Email': current_user.Courier_Email,
+        'Courier_Contact': current_user.Courier_Contact,
+    }
+
+    # Render the profile template with the courier's data
+    return render_template('Courier/CourierProfile.html', courier=courier_data)
+
 def count_messages_sent(current_user_email):
     init_notifications()  # Ensure notifications are initialized
 
