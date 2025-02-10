@@ -13,47 +13,51 @@
 
     <div class="panel">
         <h2>Parcel Manager List</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Parcel ID</th>
-                    <th>Origin Manager ID</th>
-                    <th>Origin Manager</th>
-                    <th>Destination Manager ID</th>
-                    <th>Destination Manager</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Loop through parcels data -->
-                {% for parcel in parcels %}
-                <tr>
-                    <td>{{ parcel.Parcel_ID }}</td>
-                    <td>{{ parcel.Send_Manager_ID }}</td>
-                    <td>{{ parcel.Send_Manager_Name }}</td>
-                    <td>{{ parcel.Receive_Manager_ID }}</td>
-                    <td>{{ parcel.Receive_Manager_Name }}</td>
-                    <td>
-                        <button onclick="viewManagers(
-                            '{{ parcel.Parcel_ID }}',
-                            '{{ parcel.Send_Manager_ID }}',
-                            '{{ parcel.Send_Manager_Name }}',
-                            '{{ parcel.Send_Manager_Email }}',
-                            '{{ parcel.Send_Manager_Contact }}',
-                            '{{ parcel.Send_Manager_Branch }}',
-                            '{{ parcel.Receive_Manager_ID }}',
-                            '{{ parcel.Receive_Manager_Name }}',
-                            '{{ parcel.Receive_Manager_Email }}',
-                            '{{ parcel.Receive_Manager_Contact }}',
-                            '{{ parcel.Receive_Manager_Branch }}'
-                        )">
-                            View Details
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% if parcels %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parcel ID</th>
+                        <th>Origin Manager ID</th>
+                        <th>Origin Manager</th>
+                        <th>Destination Manager ID</th>
+                        <th>Destination Manager</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loop through parcels data -->
+                    {% for parcel in parcels %}
+                    <tr>
+                        <td>{{ parcel.Parcel_ID }}</td>
+                        <td>{{ parcel.Send_Manager_ID }}</td>
+                        <td>{{ parcel.Send_Manager_Name }}</td>
+                        <td>{{ parcel.Receive_Manager_ID }}</td>
+                        <td>{{ parcel.Receive_Manager_Name }}</td>
+                        <td>
+                            <button onclick="viewManagers(
+                                '{{ parcel.Parcel_ID }}',
+                                '{{ parcel.Send_Manager_ID }}',
+                                '{{ parcel.Send_Manager_Name }}',
+                                '{{ parcel.Send_Manager_Email }}',
+                                '{{ parcel.Send_Manager_Contact }}',
+                                '{{ parcel.Send_Manager_Branch }}',
+                                '{{ parcel.Receive_Manager_ID }}',
+                                '{{ parcel.Receive_Manager_Name }}',
+                                '{{ parcel.Receive_Manager_Email }}',
+                                '{{ parcel.Receive_Manager_Contact }}',
+                                '{{ parcel.Receive_Manager_Branch }}'
+                            )">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-managers-message">Parcel Manager Not Found</p>
+        {% endif %}
     </div>
 </div>
 
@@ -105,12 +109,7 @@
     }
 
     function goBack() {
-        // Check if there's history to go back to, otherwise redirect to the default page
-        if (document.referrer) {
-            window.history.back();
-        } else {
-            window.location.href = "{{ url_for('courier.collect_parcel') }}";
-        }
+        window.location.href = "{{ url_for('courier.collect_parcel') }}";
     }
 </script>
 {% endblock %}
