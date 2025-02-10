@@ -15,7 +15,9 @@
         <!-- Welcome Card -->
         <div class="welcome-card">
             <h3>Welcome,{{courier.Courier_Name}}!</h3>
-            <img src="courier_welcome.png" alt="Welcome Image" class="welcome-image">
+            <img src="{{ url_for('static', filename='courier_welcome.jpg.webp') }}" alt="Welcome Image" class="welcome-image"
+            alt="Welcome Image" 
+            class="welcome-image">
         </div>
 
         <!-- Notification Card -->
