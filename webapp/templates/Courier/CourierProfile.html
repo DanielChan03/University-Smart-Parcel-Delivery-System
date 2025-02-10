@@ -1,0 +1,82 @@
+{% extends "Courier/CourierBase.html" %}
+
+{% block title %}Courier Profile{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='Couriercss/CourierProfile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <h2>Courier Profile</h2>
+    </div>
+
+    <!-- Profile Details -->
+    <div class="profile-details">
+        <p><strong>Courier ID:</strong> {{ courier.Courier_ID }}</p>
+        <p><strong>Name:</strong> {{ courier.Courier_Name }}</p>
+
+        <!-- Gender Selection -->
+        <div class="gender-selection">
+            <strong>Gender:</strong>
+            <label>
+                <input type="radio" name="gender" value="Male"> Male
+            </label>
+            <label>
+                <input type="radio" name="gender" value="Female"> Female
+            </label>
+        </div>
+
+        <p><strong>Email:</strong> {{ courier.Courier_Email }}</p>
+        <p><strong>Contact:</strong> {{ courier.Courier_Contact }}</p>
+    </div>
+
+    <!-- Edit Profile Button -->
+    <button id="editProfileButton" class="edit-profile-button">Save Changes</button>
+</div>
+
+<script>
+    // JavaScript to handle gender selection and local storage
+    const genderRadios = document.querySelectorAll('input[name="gender"]');
+    const editProfileButton = document.getElementById('editProfileButton');
+
+    // Retrieve gender from localStorage (if it exists)
+    const savedGender = localStorage.getItem('courierGender');
+    if (savedGender) {
+        document.querySelector(`input[name="gender"][value="${savedGender}"]`).checked = true;
+    }
+
+    // Track the initial gender value
+    let initialGender = savedGender || null;
+
+    genderRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const selectedGender = document.querySelector('input[name="gender"]:checked').value;
+            if (selectedGender !== initialGender) {
+                editProfileButton.style.display = 'block'; // Show the button
+            } else {
+                editProfileButton.style.display = 'none'; // Hide the button
+            }
+        });
+    });
+
+    // Handle the Edit button click
+    editProfileButton.addEventListener('click', () => {
+        const selectedGender = document.querySelector('input[name="gender"]:checked').value;
+
+        // Save the selected gender to localStorage
+        localStorage.setItem('courierGender', selectedGender);
+
+        // Update the initial gender value
+        initialGender = selectedGender;
+
+        // Hide the Edit button after saving
+        editProfileButton.style.display = 'none';
+
+        // Optional: Show a success message
+        alert('Gender saved successfully!');
+    });
+</script>
+{% endblock %}
