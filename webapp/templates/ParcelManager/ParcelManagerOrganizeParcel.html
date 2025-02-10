@@ -1,16 +1,12 @@
 {% extends "ParcelManager/ParcelManagerBase.html" %}
 
-{% block title %}Monitor Locker Issue{% endblock %}
+{% block title %}Organize Parcel{% endblock %}
 
 {% block styles %}
-
 <link rel="stylesheet" href="{{ url_for('static', filename = 'ParcelManagercss/ParcelManagerOrganizeParcel.css')}}">
-
 {% endblock %}
 
-
 {% block content %}
-
 <div class="organize-parcel-container">
   <h3 class="form-title">Parcel List</h3>
 
@@ -34,24 +30,36 @@
           <td>{{ parcel.sender.User_Name }}</td>
           <td>{{ parcel.recipient.User_Name }}</td>
           <td>{{ parcel.sender.university.University_Name }}</td>
-          {% for status in statuses %}
-          <td>{{ status.Status_Type }}</td>
-          {% endfor %}
+          <td>{{ parcel.status_updates[-1].Status_Type if parcel.status_updates else 'Unknown' }}</td>
         </tr>
+        {% endfor %}
       </tbody>
-      {% endfor %}
     </table>
-    <button type="submit" class="update-button" >Group Selected Parcel</button>
+
+    <!-- Add a date input field for the delivery date -->
+    <div class="delivery-fields">
+      <label for="delivery_date">Delivery Date:</label>
+      <input type="date" id="delivery_date" name="delivery_date" min="{{ min_date }}" required>
+
+      <!-- Add a select field for courier assignment -->
+      <label for="courier_id">Assign Courier:</label>
+      <select name="courier_id" id="courier_id" required>
+        {% for courier in couriers %}
+        <option value="{{ courier.Courier_ID }}">{{ courier.Courier_Name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <button type="submit" class="update-button">Group Selected Parcel</button>
 
     <h3 class="form-title">Delivery List</h3>
     <table class="delivery-list-table">
       <thead>
         <tr>
-          <td>Delivery ID</td>
-          <td>Parcel IDs</td>
-          <td>Assign to Courier</td>
-          <td>Courier ID</td>
-          <td>Delivery Date</td>
+          <th>Delivery ID</th>
+          <th>Parcel IDs</th>
+          <th>Courier</th>
+          <th>Delivery Date</th>
         </tr>
       </thead>
       <tbody>
@@ -59,34 +67,32 @@
         <tr>
           <td>{{ delivery.Delivery_ID }}</td>
           <td>{{ delivery.parcels | map(attribute='Parcel_ID') | join(', ') }}</td>
-          <td>
-            <select name="courier_id" class="courier_select"
-              onchange="updateCourierInfo(this, '{{ delivery.Delivery_ID }}')">
-              {% for courier in couriers %}
-              <option value="{{ courier.Courier_ID }}">{{ courier.Courier_Name }}</option>
-              {% endfor %}
-            </select>
-            <button class="update-button" onclick="assignCourier('{{ delivery.Delivery_ID }}')">Assign</button>
-          </td>
-          <td><input type="date" name="delivery_date_{{ delivery.Delivery_ID }}" class="delivery_date"></td>
+          <td>{{ delivery.courier.Courier_Name if delivery.courier else 'Unassigned' }}</td>
+          <td>{{ delivery.Deliver_Date.strftime('%Y-%m-%d') if delivery.Deliver_Date else 'N/A' }}</td>
         </tr>
-      </tbody>
-      {% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </form>
-
 </div>
+
 <script>
   document.addEventListener("DOMContentLoaded", function() {
+    // Set the minimum date to today's date
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('delivery_date').setAttribute('min', today);
+
+    // Prevent form submission if no parcels are selected
     document.querySelector("form").addEventListener("submit", function(event) {
         const selectedCheckboxes = document.querySelectorAll('input[name="selected_parcels[]"]:checked');
+        console.log("Selected checkboxes count:", selectedCheckboxes.length);
+        
         if (selectedCheckboxes.length === 0) {
             alert("No parcel selected!");
-            event.preventDefault(); // Prevent form submission if no checkboxes are selected
+            event.preventDefault();
         }
     });
-});
+  });
 </script>
 
 {% endblock %}

@@ -119,7 +119,7 @@ class Delivery(db.Model):
     __tablename__ = 'delivery'
     Delivery_ID = db.Column(db.String(15), primary_key=True)
     Courier_ID = db.Column(db.String(15), db.ForeignKey('courier.Courier_ID'), nullable= False)
-    Deliver_Date = db.Column(db.Date, nullable= True )  # Date when the parcel is collected by the courier
+    Deliver_Date = db.Column(db.Date, nullable= False )  # Date when the parcel is collected by the courier
     Arrival_Date = db.Column(db.Date, nullable= True )  # Date when the parcel arrives at the destination
   
     # Relationship to Courier table
