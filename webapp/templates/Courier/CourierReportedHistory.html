@@ -1,0 +1,50 @@
+{% extends "Courier/CourierBase.html" %}
+
+{% block title %}View Reported History{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='Couriercss/CourierReportedHistory.css') }}">
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+
+    <!-- Back Button -->
+    <button class="back-button" onclick="goBack()">Back</button>
+
+    <h1>View Reported History</h1>
+
+    {% if reported_history %}  <!-- Start of the if block -->
+      <table class="parcel-table">
+        <thead>
+          <tr>
+            <th>Parcel ID</th>
+            <th>Reported Title</th>
+            <th>Parcel Destination</th>
+            <th>Reported At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in reported_history %}
+          <tr>
+            <td>{{ report.Parcel_ID }}</td>
+            <td>{{ report.Reported_Title }}</td>
+            <td>{{ report.Parcel_Destination }}</td>
+            <td>{{ report.Reported_At }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}  <!-- Else block for when reported_history is empty -->
+      <div class="no-issues-found">
+        <p>No Reported Issue Found</p>
+      </div>
+    {% endif %}  <!-- End of the if block -->
+  </div>
+
+  <script>
+    function goBack() {
+      window.location.href = "{{ url_for('courier.report_parcel') }}";
+    }
+  </script>
+{% endblock %}
