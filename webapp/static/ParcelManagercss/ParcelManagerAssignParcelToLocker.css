@@ -1,0 +1,86 @@
+/* Container for the whole page */
+.assign-parcel-to-locker-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+}
+
+/* Section Titles */
+.section-title {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+/* Title of the form */
+.form-title {
+    font-size: 2rem;
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Table styling */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+/* Button styles */
+.action-button, .assign-button {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.action-button:hover, .assign-button:hover {
+    background-color: #2980b9;
+}
+
+/* Container for the main content */
+.main-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+/* Each section container (Unassigned Parcels and Lockers) */
+.unassigned-parcels-container, .lockers-container {
+    width: 48%;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.selected-parcel-and-locker-container {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.selected-info {
+    margin-bottom: 20px;
+}
+
+.selected-info p {
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
