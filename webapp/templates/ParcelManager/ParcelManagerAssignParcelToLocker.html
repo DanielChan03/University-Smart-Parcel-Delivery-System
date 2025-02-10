@@ -1,0 +1,111 @@
+{% extends "ParcelManager/ParcelManagerBase.html" %}
+
+{% block title %}Assign Parcel to Locker{% endblock %}
+
+{% block styles %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'ParcelManagercss/ParcelManagerAssignParcelToLocker.css')}}">
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="assign-parcel-to-locker-container">
+        <h3 class="form-title">Assign Parcel to Locker</h3>
+        
+        <div class="main-content">
+            <div class="unassigned-parcels-container">
+                <h2 class="section-title">Unassigned Parcels</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Parcel ID</th>
+                            <th>Sender Name</th>
+                            <th>Recipient</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for parcel in parcels %}
+                            <tr>
+                                <th>{{ parcel.Parcel_ID }}</th>
+                                <th>{{ parcel.sender.User_Name }}</th>
+                                <th>{{ parcel.recipient.User_Name }}</th>
+                                <th>
+                                    <button type="submit" class="action-button" onclick="selectParcel('{{ parcel.Parcel_ID }}')">Select</button>
+                                </th>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+    
+    
+            <div class="lockers-container">
+                <h2 class="section-title">Lockers</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Locker ID</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for locker in lockers %}
+                            <tr>
+                                <th>{{ locker.Locker_ID }}</th>
+                                <th>{{ locker.Locker_Status }}</th>
+                                <th>
+                                    <button type="button" class="action-button locker-select-button" data-locker-id="{{ locker.Locker_ID }}" onclick="selectLocker('{{ locker.Locker_ID }}')">Select</button>
+                                </th>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+
+
+        <div class="selected-parcel-and-locker-container">
+            <h2 class="form-title">Selected Parcel and Locker</h2>
+            <div class="selected-info">
+                <p><strong>Selected Parcels: </strong> <span id="selected-parcel-id"></span>None</p>
+                <p><strong>Selected Locker: </strong> <span id="selected-locker-id"></span> None</p>
+            </div>
+            <form method="POST" action="{{ url_for('parcel_manager.assign_parcel_to_locker') }}">
+                <input type="hidden" name="selected_parcel" id="selected-parcel">
+                <input type="hidden" name="selected_locker" id="selected-locker">
+                <button type="submit" class="assign-button" id="assign-button">Assign Parcel to Locker</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        let selectedParcel = null;
+        let selectedLocker = null;
+    
+        // Update selected parcel
+        function selectParcel(parcelID) {
+            selectedParcel = parcelID;
+            document.getElementById('selected-parcel-id').innerText = parcelID;
+            document.getElementById('selected-parcel').value = parcelID;
+        }
+    
+        // Update selected locker
+        function selectLocker(lockerID) {
+            selectedLocker = lockerID;
+            document.getElementById('selected-locker-id').innerText = lockerID;
+            document.getElementById('selected-locker').value = lockerID;  
+            }
+    
+        // Prevent page refresh when selecting a locker
+        document.querySelectorAll('.locker-select-button').forEach(button => {
+            button.addEventListener('click', function (event) {
+                event.preventDefault(); // Prevent form submission
+                selectLocker(this.dataset.lockerId);
+            });
+        });
+    </script>
+    
+{% endblock %}
