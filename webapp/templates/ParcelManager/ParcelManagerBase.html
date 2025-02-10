@@ -26,9 +26,9 @@
             <a href="#">Dashboard</a>
             <a href="{{ url_for('parcel_manager.organize_parcel') }}">Organize Parcel</a>
             <a href="{{ url_for('parcel_manager.update_parcel_status')}}">Update Parcel Status</a>
-            <a href="#">Update Parcel Status</a>
+            <a href="{{ url_for('parcel_manager.assign_parcel_to_locker') }}">Assign Parcel to Locker</a>
             <a href="{{ url_for('parcel_manager.monitor_locker_issue') }}">Monitor Locker</a>
-            <a href="#">Log Arrival Parcel</a>
+            <a href="{{ url_for('parcel_manager.log_arrival_parcel') }}">Log Arrival Parcel</a>
         </nav>
     </header>
 
