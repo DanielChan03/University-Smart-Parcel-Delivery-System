@@ -139,7 +139,7 @@ def monitor_locker_issue():
 
 @parcel_manager.route('/log_arrival_parcel', methods=['GET', 'POST'])
 def log_arrival_parcel():
-    parcels = Parcel.query.all()
+    parcels = Parcel.query.filter(Parcel.Delivery_ID.isnot(None)).all()
     statuses = ["Verified", "Missing"]
 
     if request.method == 'POST':
@@ -173,4 +173,58 @@ def log_arrival_parcel():
         parcels = parcels,
         statuses = statuses,
         )
+
+
+@parcel_manager.route('/assign_parcel_to_locker', methods=['GET', 'POST'])
+def assign_parcel_to_locker():
+    if request.method == 'POST':  # Only handle form submission here
+        parcelID = request.form.get('selected_parcel')
+        lockerID = request.form.get('selected_locker')
+
+        if not parcelID or not lockerID:
+            flash("Please select both a parcel and a locker!", "error")
+            return redirect(url_for('parcel_manager.assign_parcel_to_locker'))
+
+        parcel = Parcel.query.get(parcelID)
+        locker = SmartLocker.query.get(lockerID)
+
+        if parcel and locker:
+            locker.Locker_Status = "Occupied"
+            parcel.Send_Locker_ID = locker.Locker_ID
+
+            parcel_status = ParcelStatus.query.filter_by(Parcel_ID=parcelID).first()
+            new_status_text = f"Assigned to Locker {locker.Locker_ID}"
+
+            if parcel_status:
+                parcel_status.Status_Type = new_status_text
+                parcel_status.Updated_by = current_user.Manager_ID  # Ensure current_user is a ParcelManager
+                parcel_status.Updated_At = datetime.utcnow()
+            else:
+                # If status doesn't exist, create a new one
+                new_status = ParcelStatus(
+                    Status_ID="S_" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=10)),  
+                    Parcel_ID=parcelID,
+                    Status_Type=new_status_text,
+                    Updated_by=current_user.Manager_ID,
+                    Updated_At=datetime.utcnow()
+                )
+                db.session.add(new_status)
+
+            db.session.commit()
+            flash(f"Parcel {parcelID} assigned to Locker {lockerID} successfully!", "success")
+        else:
+            flash("Invalid Parcel or Locker selection!", "error")
+
+        return redirect(url_for('parcel_manager.assign_parcel_to_locker'))  # 🚀 Only redirect after POST
+
+    # Handle GET requests - Render the template properly
+    parcels = db.session.query(Parcel).join(ParcelStatus).filter(ParcelStatus.Status_Type == 'Verified').all()
+    lockers = SmartLocker.query.filter_by(Locker_Status='Available').all()
+
+    return render_template(
+        'ParcelManager/ParcelManagerAssignParcelToLocker.html',
+        parcels=parcels,
+        lockers=lockers
+    )
+    
 
