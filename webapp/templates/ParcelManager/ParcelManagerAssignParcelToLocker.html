@@ -84,20 +84,33 @@
     <script>
         let selectedParcel = null;
         let selectedLocker = null;
+        let availableLockers = { locker_count };
     
-        // Update selected parcel
+        // Select Parcel function
         function selectParcel(parcelID) {
             selectedParcel = parcelID;
             document.getElementById('selected-parcel-id').innerText = parcelID;
             document.getElementById('selected-parcel').value = parcelID;
+    
+            
+            if (availableLockers === 0) {
+                let confirmWaitlist = confirm("All lockers are occupied. Would you like to add this parcel to the waitlist?");
+                if (confirmWaitlist) {
+                    document.getElementById('waitlist-form').submit(); // Submit hidden waitlist form
+                } else {
+                    selectedParcel = null;
+                    document.getElementById('selected-parcel-id').innerText = "None";
+                    document.getElementById('selected-parcel').value = "";
+                }
+            }
         }
     
-        // Update selected locker
+        // Select Locker function
         function selectLocker(lockerID) {
             selectedLocker = lockerID;
             document.getElementById('selected-locker-id').innerText = lockerID;
-            document.getElementById('selected-locker').value = lockerID;  
-            }
+            document.getElementById('selected-locker').value = lockerID;
+        }
     
         // Prevent page refresh when selecting a locker
         document.querySelectorAll('.locker-select-button').forEach(button => {
@@ -107,5 +120,11 @@
             });
         });
     </script>
+    
+    <!-- Hidden Waitlist Form -->
+    <form id="waitlist-form" method="POST" action="{{ url_for('parcel_manager.assign_parcel_to_locker') }}">
+        <input type="hidden" name="selected_parcel" id="selected-parcel">
+        <input type="hidden" name="selected_locker" value="">
+    </form>
     
 {% endblock %}
