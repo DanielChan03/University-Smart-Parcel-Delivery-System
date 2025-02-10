@@ -1,4 +1,4 @@
-
+/* Body and Global Styling */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
@@ -34,10 +34,35 @@ body {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 48%; /* Ensures two cards per row */
+    text-align: center;
+}
+
+/* Parcel Status */
+.status-card h2 {
+    color: #333;
 }
 
 /* Locker Status */
-.locker-status-card p {
-    color: blue;
-    font-weight: bold;
+.locker-status-card h2 {
+    color: #333;
+}
+
+.locker-status-item {
+    padding: 10px 0;
+    font-size: 16px;
+    list-style-type: none;
+}
+
+.locker-status-item:hover {
+    background-color: #f4f4f4;
+    cursor: pointer;
+}
+
+/* Color Coding Locker Status */
+.available {
+    color: green; /* Green for Available lockers */
+}
+
+.occupied {
+    color: red; /* Red for Occupied lockers */
 }
