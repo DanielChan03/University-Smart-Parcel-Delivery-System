@@ -1,0 +1,114 @@
+/* Styling for the Parcel List */
+.organize-parcel-container {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+.form-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    margin-top: 50px;
+}
+
+/* Parcel List Table */
+.parcel-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.parcel-list-table th, .parcel-list-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.parcel-list-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.parcel-list-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Delivery List Table */
+.delivery-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.delivery-list-table th, .delivery-list-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.delivery-list-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.delivery-list-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Select and Button Styles */
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+.update-button {
+    padding: 8px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.update-button:hover {
+    background-color: #218838;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .container {
+        width: 95%;
+    }
+
+    .form-title {
+        font-size: 1.4rem;
+    }
+
+    th, td {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .parcel-list-table, .delivery-list-table {
+        width: 100%;
+    }
+
+    th, td {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    .update-button {
+        font-size: 0.9rem;
+        padding: 8px;
+        width: 100%;
+    }
+}
