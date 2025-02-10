@@ -3,14 +3,13 @@
 {% block title %}Notifications - TrackIQ{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='StudentStaffcss/notifications.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='StudentStaffcss/notification.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="notifications-container">
     <h1>Your Notifications</h1>
 
-    <!-- 通知列表 -->
     <div class="notification-list">
         {% if notifications %}
             {% for notification in notifications %}
