@@ -22,12 +22,13 @@
                 <th>Location</th>
                 <th>Status</th>
                 <th>Reported %</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for parcel in parcels %}
-            <form method="POST" action="{{ url_for('parcel_manager.log_arrival_parcel') }}">
-                <tr>
+            <tr>
+                <form method="POST" action="{{ url_for('parcel_manager.log_arrival_parcel') }}">
                     <td>{{ parcel.Parcel_ID }}</td>
                     <td>{{ parcel.delivery.Courier_ID }}</td>
                     <td>
@@ -41,7 +42,7 @@
                     <td>{{ parcel.recipient.User_Name }}</td>
                     <td>{{ parcel.sender.university.University_Name }}</td>
                     <td>
-                        <select name="Update_Status" class="status-select">
+                        <select name="Update_Status" class="status-select" required>
                             <option disabled selected>Select Status</option>
                             <option value="Verified - Collected">Verified - Collected</option>
                             <option value="Verified - Missing">Verified - Missing</option>
@@ -55,13 +56,15 @@
                             N/A
                         {% endif %}
                     </td>
-                </tr>
-                <input type="hidden" name="Parcel_ID" value="{{ parcel.Parcel_ID }}">
+                    <input type="hidden" name="Parcel_ID" value="{{ parcel.Parcel_ID }}">
+                    <td>
+                        <button type="submit" class="update-button">Submit</button>
+                    </td>
+                </form>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
-    <button type="submit" class="update-button">Submit Verification</button>
-</form>
 </div>
 
 {% endblock %}
