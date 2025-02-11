@@ -6,6 +6,8 @@ import random
 import string
 from datetime import datetime  # Import the datetime class
 from sqlalchemy.orm.exc import NoResultFound
+from datetime import datetime, timezone
+
 
 
 parcel_manager = Blueprint('parcel_manager', __name__)
@@ -347,7 +349,7 @@ def update_parcel_status():
                 Parcel_ID=parcel_id,
                 Status_Type=update_status,
                 Updated_by=current_user.Manager_ID,
-                Updated_At=datetime.utcnow()
+                Updated_At=datetime.now(timezone.utc)
             )
             db.session.add(new_status)
             db.session.commit()
@@ -413,7 +415,7 @@ def log_arrival_parcel():
                 Parcel_ID=parcel_id,
                 Status_Type=update_status,
                 Updated_by=current_user.Manager_ID,
-                Updated_At=datetime.utcnow()
+                Updated_At=datetime.now(timezone.utc)
             )
             db.session.add(new_status)
             db.session.commit()
@@ -486,7 +488,7 @@ def assign_parcel_to_locker():
                     Parcel_ID=parcel_id,
                     Status_Type=f"Assigned to Locker {locker.Locker_ID}",
                     Updated_by=current_user.Manager_ID,
-                    Updated_At=datetime.utcnow()
+                    Updated_At=datetime.now(timezone.utc)
                 )
                 db.session.add(new_status)
 
@@ -521,3 +523,46 @@ def assign_parcel_to_locker():
         lockers=lockers,
         locker_count=locker_count
     )
+
+@parcel_manager.route('/assign_parcel_to_waitlist', methods=['POST'])
+@login_required
+def assign_parcel_to_waitlist():
+    parcel_id = request.form.get('selected_parcel')
+
+    if not parcel_id:
+        flash("Please select a parcel before adding to the waitlist!", "error")
+        return redirect(url_for('parcel_manager.assign_parcel_to_locker'))
+
+    try:
+        # Check if parcel is already in waitlist
+        existing_waitlist = Waitlist.query.filter_by(Parcel_ID=parcel_id).first()
+        if existing_waitlist:
+            flash("Parcel is already in the waitlist!", "info")
+            return redirect(url_for('parcel_manager.assign_parcel_to_locker'))
+
+        # Generate unique waitlist ID
+        def generate_unique_waitlist_id():
+            while True:
+                waitlist_id = f"WT{random.randint(10000000, 99999999)}"
+                existing_waitlist = Waitlist.query.filter_by(Waitlist_ID=waitlist_id).first()
+                if not existing_waitlist:
+                    return waitlist_id
+
+        new_waitlist_id = generate_unique_waitlist_id()
+
+        # Add the parcel to the waitlist
+        new_waitlist = Waitlist(
+            Waitlist_ID=new_waitlist_id,
+            Parcel_ID=parcel_id,
+            Waitlist_Status="Pending"
+        )
+        db.session.add(new_waitlist)
+        db.session.commit()
+
+        flash(f"Parcel {parcel_id} has been added to the waitlist!", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error: {str(e)}", "error")
+
+    return redirect(url_for('parcel_manager.assign_parcel_to_locker'))
