@@ -32,10 +32,8 @@ def parcel_manager_dashboard():
     # Fetch pending parcels (status type is not "Delivered")
     pending_parcels = db.session.query(ParcelStatus).filter(ParcelStatus.Status_Type != "Delivered").count()
 
-    # Fetch locker status
-    locker_status = db.session.query(SmartLocker.Locker_Status).all()
-
-    lockers = SmartLocker.query.all()
+    # Fetch lockers for the same branch as the Parcel Manager
+    lockers = SmartLocker.query.filter(SmartLocker.Locker_ID.startswith(current_user.Manager_Work_Branch)).all()
 
     # Count messages sent and received by the current user
     current_user_email = current_user.Manager_Email
@@ -44,13 +42,12 @@ def parcel_manager_dashboard():
 
     return render_template(
         "ParcelManager/ParcelManagerDashboard.html",
-        parcel_manager = current_user,
-        notifications = notifications,
-        total_received_parcels = total_received_parcels,
-        total_delivered_parcels = total_delivered_parcels,
-        pending_parcels = pending_parcels,
-        locker_status = locker_status,
-        lockers = lockers,
+        parcel_manager=current_user,
+        notifications=notifications,
+        total_received_parcels=total_received_parcels,
+        total_delivered_parcels=total_delivered_parcels,
+        pending_parcels=pending_parcels,
+        lockers=lockers,
         messages_sent=messages_sent,
         messages_received=messages_received
     )
@@ -372,17 +369,21 @@ def monitor_locker_issue():
     # Get search query
     lockerFilter = request.args.get('filter', '').strip()
 
+    # Fetch lockers from the same branch as the Parcel Manager
     if lockerFilter:
-        lockers = SmartLocker.query.filter(SmartLocker.Locker_ID.ilike(f'%{lockerFilter}%')).all()
+        lockers = SmartLocker.query.filter(
+            SmartLocker.Locker_ID.startswith(current_user.Manager_Work_Branch),
+            SmartLocker.Locker_ID.ilike(f'%{lockerFilter}%')
+        ).all()
         flash(f"Showing results for Locker ID: {lockerFilter}", "success")
     else:
-        lockers = SmartLocker.query.all()
+        lockers = SmartLocker.query.filter(
+            SmartLocker.Locker_ID.startswith(current_user.Manager_Work_Branch)
+        ).all()
 
-
-    
     return render_template(
         "ParcelManager/ParcelManagerMonitorLockerIssue.html",
-        lockers = lockers,
+        lockers=lockers,
         lockerFilter=lockerFilter,
     )
 
@@ -514,7 +515,10 @@ def assign_parcel_to_locker():
         ~ParcelStatus.Status_Type.like("Assigned to Locker%")
     ).all()
 
-    lockers = SmartLocker.query.filter_by(Locker_Status='Available').all()
+    lockers = SmartLocker.query.filter(
+        SmartLocker.Locker_Status == 'Available',
+        SmartLocker.Locker_ID.startswith(current_user.Manager_Work_Branch)
+    ).all()
     locker_count = len(lockers)
 
     return render_template(
