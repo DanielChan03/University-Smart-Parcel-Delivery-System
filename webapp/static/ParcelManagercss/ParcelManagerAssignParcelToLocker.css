@@ -1,86 +1,95 @@
-/* Container for the whole page */
 .assign-parcel-to-locker-container {
+    max-width: 1000px;
+    margin: 20px auto;
     padding: 20px;
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f9;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Section Titles */
-.section-title {
-    font-size: 1.5rem;
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-/* Title of the form */
-.form-title {
-    font-size: 2rem;
-    color: #2c3e50;
+h2.form-title, h3.section-title {
     text-align: center;
-    margin-bottom: 20px;
+    color: #333;
 }
 
-/* Table styling */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.table th, .table td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #ddd;
-}
-
-.table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-
-/* Button styles */
-.action-button, .assign-button {
-    padding: 10px 20px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.action-button:hover, .assign-button:hover {
-    background-color: #2980b9;
-}
-
-/* Container for the main content */
 .main-content {
     display: flex;
     justify-content: space-between;
-    gap: 30px;
-}
-
-/* Each section container (Unassigned Parcels and Lockers) */
-.unassigned-parcels-container, .lockers-container {
-    width: 48%;
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.selected-parcel-and-locker-container {
-    margin-top: 30px;
-    padding: 20px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.selected-info {
+    gap: 20px;
     margin-bottom: 20px;
 }
 
-.selected-info p {
-    font-size: 1.1rem;
-    color: #2c3e50;
+.unassigned-parcels-container, .lockers-container, .selected-parcel-and-locker-container {
+    flex: 1;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.table th {
+    background: #f2f2f2;
+    color: black;
+}
+
+.select-button, .locker-button, .waitlist-button, .assign-button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.3s ease;
+}
+
+.select-button:hover, .locker-button:hover, .waitlist-button:hover, .assign-button:hover {
+    background: #2980b9;
+}
+
+.selected-parcel-and-locker-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.no-lockers {
+    text-align: center;
+    font-size: 1rem;
+    color: #d9534f;
+    font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+
+    .unassigned-parcels-container, .lockers-container {
+        width: 100%;
+        margin-bottom: 15px;
+    }
 }
