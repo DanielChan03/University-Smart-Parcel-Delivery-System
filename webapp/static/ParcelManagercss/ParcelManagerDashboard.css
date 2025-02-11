@@ -37,6 +37,14 @@ body {
     text-align: center;
 }
 
+.welcome-image {
+    width: 200px;
+    height: auto;
+    display: block;
+    margin-top: 10px;
+    margin-left: 180px;
+}
+
 /* Parcel Status */
 .status-card h2 {
     color: #333;
