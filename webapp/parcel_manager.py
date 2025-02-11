@@ -187,13 +187,7 @@ def log_arrival_parcel():
             parcel_status = ParcelStatus.query.filter_by(Parcel_ID=parcelID).first()
 
             if parcel_status:
-                # Update the status type based on new options
-                if updateStatus == "Verified":
-                    parcel_status.Status_Type = "Verified - Collected"
-                elif updateStatus == "Missing":
-                    parcel_status.Status_Type = "Verified - Missing"
-                else:
-                    parcel_status.Status_Type = "Verified - Damage"
+                parcel_status.Status_Type = updateStatus
 
                 parcel_status.Updated_by = current_user.Manager_ID  # Make sure this attribute exists
                 parcel_status.Updated_At = datetime.utcnow()
@@ -291,7 +285,7 @@ def assign_parcel_to_locker():
     ).all()
 
     # Combine the lists, with waitlist parcels first
-    parcels = [parcel.Parcel_ID for parcel in parcels_waitlist] + [parcel.Parcel_ID for parcel in parcels_verified_collected]
+    parcels = parcels_waitlist + parcels_verified_collected
 
     lockers = SmartLocker.query.filter_by(Locker_Status='Available').all()
     locker_count = len(lockers)
@@ -302,4 +296,3 @@ def assign_parcel_to_locker():
         lockers=lockers,
         locker_count=locker_count
     )
-
