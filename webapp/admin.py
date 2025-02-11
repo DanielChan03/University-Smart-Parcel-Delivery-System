@@ -1,8 +1,10 @@
 from flask import Blueprint, render_template, session, flash, redirect, url_for, request, jsonify
 from flask_login import current_user, login_required
-from .models import Admin, StudentStaff, Parcel, ParcelStatus,Waitlist, ParcelManager, Courier, db
+from .models import Admin, StudentStaff, Parcel, ParcelStatus, Waitlist, ParcelManager, Courier, db
 from werkzeug.security import generate_password_hash
 import random
+from datetime import datetime
+from sqlalchemy import func, and_
 
 admin = Blueprint('admin', __name__)
 
@@ -39,13 +41,142 @@ def admin_dashboard():
     )
 
 # Generate Report
-@admin.route('/generate-report', methods=['GET'])
+@admin.route('/generate-report', methods=['GET', 'POST'])
 @login_required
 def generate_report():
     if not isinstance(current_user, Admin):
-            flash('Unauthorized access! Please log in as an admin.', category='error')
-            return redirect(url_for('admin_auth.admin_login'))
+        flash('Unauthorized access! Please log in as an admin.', category='error')
+        return redirect(url_for('admin_auth.admin_login'))
+
+    if request.method == 'POST':
+        report_type = request.form.get('report_type')
+        month = request.form.get('month')
+        year = request.form.get('year')
+
+        if report_type == 'monthly':
+            return redirect(url_for('admin.monthly_summary_report', month=month, year=year))
+        elif report_type == 'courier-activity':
+            return redirect(url_for('admin.courier_activity_report', month=month, year=year))
+        elif report_type == 'locker-usage':
+            return redirect(url_for('admin.locker_usage_report', month=month, year=year))
+
     return render_template("Admin/AdminGenerateReport.html")
+
+# Monthly Summary Report
+@admin.route('/monthly-summary-report/<month>/<year>')
+@login_required
+def monthly_summary_report(month, year):
+    if not isinstance(current_user, Admin):
+        flash('Unauthorized access! Please log in as an admin.', category='error')
+        return redirect(url_for('admin_auth.admin_login'))
+
+    # Calculate total received parcels for the selected month and year
+    total_received = Parcel.query.filter(
+        func.extract('month', Parcel.Received_Date) == month,
+        func.extract('year', Parcel.Received_Date) == year
+    ).count()
+
+    # Calculate total delivered parcels for the selected month and year
+    total_delivered = ParcelStatus.query.filter(
+        ParcelStatus.Status_Type == 'Delivered',
+        func.extract('month', ParcelStatus.Status_Date) == month,
+        func.extract('year', ParcelStatus.Status_Date) == year
+    ).count()
+
+    # Calculate pending parcels for the selected month and year
+    pending_parcels = ParcelStatus.query.filter(
+        ParcelStatus.Status_Type != 'Delivered',
+        func.extract('month', ParcelStatus.Status_Date) == month,
+        func.extract('year', ParcelStatus.Status_Date) == year
+    ).count()
+
+    # Calculate average delivery time (in days)
+    avg_delivery_time = db.session.query(
+        func.avg(func.julianday(ParcelStatus.Status_Date) - func.julianday(Parcel.Received_Date))
+    ).filter(
+        ParcelStatus.Status_Type == 'Delivered',
+        func.extract('month', ParcelStatus.Status_Date) == month,
+        func.extract('year', ParcelStatus.Status_Date) == year
+    ).scalar()
+
+    # Find the most active sender and recipient
+    most_active_sender = db.session.query(
+        Parcel.Sender_ID,
+        StudentStaff.User_Name,
+        func.count(Parcel.Parcel_ID).label('total')
+    ).join(StudentStaff, Parcel.Sender_ID == StudentStaff.User_ID).filter(
+        func.extract('month', Parcel.Received_Date) == month,
+        func.extract('year', Parcel.Received_Date) == year
+    ).group_by(Parcel.Sender_ID).order_by(func.count(Parcel.Parcel_ID).desc()).first()
+
+    most_active_recipient = db.session.query(
+        Parcel.Recipient_ID,
+        StudentStaff.User_Name,
+        func.count(Parcel.Parcel_ID).label('total')
+    ).join(StudentStaff, Parcel.Recipient_ID == StudentStaff.User_ID).filter(
+        func.extract('month', Parcel.Received_Date) == month,
+        func.extract('year', Parcel.Received_Date) == year
+    ).group_by(Parcel.Recipient_ID).order_by(func.count(Parcel.Parcel_ID).desc()).first()
+
+    return render_template(
+        "Admin/MonthlySummaryReport.html",
+        total_received=total_received,
+        total_delivered=total_delivered,
+        pending_parcels=pending_parcels,
+        avg_delivery_time=avg_delivery_time,
+        most_active_sender=most_active_sender,
+        most_active_recipient=most_active_recipient
+    )
+
+# Courier Activity Report
+@admin.route('/courier-activity-report/<month>/<year>')
+@login_required
+def courier_activity_report(month, year):
+    if not isinstance(current_user, Admin):
+        flash('Unauthorized access! Please log in as an admin.', category='error')
+        return redirect(url_for('admin_auth.admin_login'))
+
+    # Fetch courier activity data
+    courier_activity = db.session.query(
+        Courier.Courier_Name,
+        func.count(ParcelStatus.Parcel_ID).label('total_deliveries'),
+        func.avg(func.julianday(ParcelStatus.Status_Date) - func.julianday(Parcel.Received_Date)).label('avg_delivery_time')
+    ).join(ParcelStatus, ParcelStatus.Courier_ID == Courier.Courier_ID).join(
+        Parcel, Parcel.Parcel_ID == ParcelStatus.Parcel_ID
+    ).filter(
+        ParcelStatus.Status_Type == 'Delivered',
+        func.extract('month', ParcelStatus.Status_Date) == month,
+        func.extract('year', ParcelStatus.Status_Date) == year
+    ).group_by(Courier.Courier_ID).all()
+
+    return render_template(
+        "Admin/CourierActivityReport.html",
+        courier_activity=courier_activity
+    )
+
+# Locker Usage Report
+@admin.route('/locker-usage-report/<month>/<year>')
+@login_required
+def locker_usage_report(month, year):
+    if not isinstance(current_user, Admin):
+        flash('Unauthorized access! Please log in as an admin.', category='error')
+        return redirect(url_for('admin_auth.admin_login'))
+
+    # Fetch locker usage data
+    locker_usage = db.session.query(
+        Parcel.Locker_ID,
+        Parcel.Locker_Location,
+        func.count(Parcel.Parcel_ID).label('total_parcels'),
+        Parcel.Locker_Status
+    ).filter(
+        func.extract('month', Parcel.Received_Date) == month,
+        func.extract('year', Parcel.Received_Date) == year
+    ).group_by(Parcel.Locker_ID).all()
+
+    return render_template(
+        "Admin/LockerUsageReport.html",
+        locker_usage=locker_usage
+    )
 
 # Manage Users
 @admin.route('/manage-users', methods=['GET', 'POST'])

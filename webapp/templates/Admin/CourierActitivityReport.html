@@ -1,3 +1,32 @@
 {% extends "Admin/AdminBase.html" %}
 
-{% block title %}Courier Activity Reportt{% endblock %}
+{% block title %}Courier Activity Report{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='Admincss/CourierActivityReport.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1>Courier Activity Report</h1>
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Courier Name</th>
+                <th>Total Deliveries</th>
+                <th>Average Delivery Time (Days)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for courier in courier_activity %}
+            <tr>
+                <td>{{ courier.Courier_Name }}</td>
+                <td>{{ courier.total_deliveries }}</td>
+                <td>{{ courier.avg_delivery_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('admin.generate_report') }}" class="btn-back">Back</a>
+</div>
+{% endblock %}

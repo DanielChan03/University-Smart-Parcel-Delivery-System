@@ -47,34 +47,40 @@ def dashboard():
 @views.route('/submit_feedback', methods=['GET', 'POST'])
 @login_required
 def submit_feedback():
-    feedbacks = session.get('feedbacks', {})
+    # Initialize feedbacks in session if not present
+    if 'feedbacks' not in session:
+        session['feedbacks'] = {}
+
+    # Get the current user's ID and name
+    user_id = str(current_user.User_ID)
+    user_name = current_user.User_Name
+
     if request.method == 'POST':
         content = request.form['content']
         feedback_type = request.form['feedback_type']
 
         if content:
-            user_id = str(current_user.User_ID)  # Ensure consistent key type
-            user_name = current_user.User_Name  
-
-            # Initialize feedbacks storage if not present
-            if 'feedbacks' not in session:
-                session['feedbacks'] = {}
-
             # Ensure the user has a list to store multiple feedback entries
             if user_id not in session['feedbacks']:
                 session['feedbacks'][user_id] = []
 
-            # Append new feedback instead of overwriting
+            # Append new feedback to the user's feedback list
             session['feedbacks'][user_id].append({
-                'name': user_name,  
+                'name': user_name,
                 'content': content,
                 'feedback_type': feedback_type,
-                'admin_response': 'Not Responded'  # New field added
+                'admin_response': 'Not Responded'  # Default response
             })
+
+            # Mark the session as modified
+            session.modified = True
 
             flash('Your feedback has been submitted successfully.', 'success')
 
-    return render_template('StudentStaff/StudentStaffFeedback.html', feedbacks=feedbacks)
+    # Fetch feedbacks for the current user
+    user_feedbacks = session['feedbacks'].get(user_id, [])
+
+    return render_template('StudentStaff/StudentStaffFeedback.html', feedbacks=user_feedbacks)
 
 @views.route('/receive_parcel', methods=['GET'])
 @login_required

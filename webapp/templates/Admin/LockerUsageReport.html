@@ -1,3 +1,36 @@
 {% extends "Admin/AdminBase.html" %}
 
 {% block title %}Locker Usage Report{% endblock %}
+
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='Admincss/LockerUsageReportcss') }}">
+{% endblock %}
+
+
+{% block content %}
+<div class="report-container">
+    <h1>Locker Usage Report</h1>
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Locker ID</th>
+                <th>Location</th>
+                <th>Total Parcels</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for locker in locker_usage %}
+            <tr>
+                <td>{{ locker.Locker_ID }}</td>
+                <td>{{ locker.Locker_Location }}</td>
+                <td>{{ locker.total_parcels }}</td>
+                <td>{{ locker.Locker_Status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('admin.generate_report') }}" class="btn-back">Back</a>
+</div>
+{% endblock %}

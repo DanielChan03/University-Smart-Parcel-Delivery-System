@@ -2,6 +2,12 @@
 
 {% block title %}Monthly Summary Report{% endblock %}
 
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='MonthlySummaryReport.css') }}">
+{% endblock %}
+
+
 {% block content %}
 <div class="report-container">
     <h1>Monthly Summary Report</h1>
@@ -9,6 +15,9 @@
         <p>Total Parcels Received: {{ total_received }}</p>
         <p>Total Parcels Delivered: {{ total_delivered }}</p>
         <p>Pending Parcels: {{ pending_parcels }}</p>
+        <p>Average Delivery Time: {{ avg_delivery_time }} days</p>
+        <p>Most Active Sender: {{ most_active_sender.User_Name }} ({{ most_active_sender.total }} parcels)</p>
+        <p>Most Active Recipient: {{ most_active_recipient.User_Name }} ({{ most_active_recipient.total }} parcels)</p>
     </div>
     <a href="{{ url_for('admin.generate_report') }}" class="btn-back">Back</a>
 </div>
