@@ -199,7 +199,7 @@ def report_parcel():
         receive_manager_email = parcel.receive_manager.Manager_Email if parcel.receive_manager else None  # Receive manager's email
 
         # Notification title and message
-        notification_title = f"{status_type} for Parcel{parcel_id}."
+        notification_title = f"{status_type} for Parcel {parcel_id}."
         notification_message = f"This is an auto-generated notification, do not reply!\n\nIssue Description: {issue_description}"
 
         # Send notifications
