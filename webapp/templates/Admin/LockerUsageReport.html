@@ -11,6 +11,9 @@
 {% block content %}
 <div class="report-container">
     <h1>Locker Usage Report</h1>
+    <p>{{ month_name }} {{ year }}</p>  <!-- Dynamic month and year -->
+</div>
+
     <table class="report-table">
         <thead>
             <tr>
@@ -32,5 +35,10 @@
         </tbody>
     </table>
     <a href="{{ url_for('admin.generate_report') }}" class="btn-back">Back</a>
+    
+</div>    <div class="report-footer">
+    <p>Generated on: {{ current_date }}</p>
 </div>
+
+
 {% endblock %}
