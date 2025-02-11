@@ -30,6 +30,7 @@
             <a href="{{ url_for('parcel_manager.assign_parcel_to_locker') }}">Assign Parcel to Locker</a>
             <a href="{{ url_for('parcel_manager.monitor_locker_issue') }}">Monitor Locker</a>
             <a href="{{ url_for('parcel_manager.log_arrival_parcel') }}">Log Arrival Parcel</a>
+            <a href="{{ url_for('parcel_manager.notifications_page') }}">Notification</a>
         </nav>
     </header>
 
@@ -41,11 +42,9 @@
             </svg> <!-- Close Icon -->
         </button>
         <ul>
-            <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
-            <li><a href="{{ url_for('admin.generate_report') }}">User Management</a></li>
-            <li><a href="{{ url_for('admin.manage_users') }}">Reports</a></li>
-            <li><a href="#">Settings</a></li>
-            <li><a href="/admin-logout">Logout</a></li>
+            <li><a href="{{ url_for('parcel_manager.parcel_manager_profile') }}">Profile</a></li>
+            <li><a href="{{ url_for('parcel_manager.parcel_manager_dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('parcel_manager_auth.parcel_manager_logout') }}">Logout</a></li>
         </ul>
     </div>
 
