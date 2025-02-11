@@ -1,0 +1,201 @@
+{% extends "ParcelManager/ParcelManagerBase.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='ParcelManagercss/ParcelManagerNotifications.css') }}">
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="panel">
+      <h2>Notifications</h2>
+      <div class="notification-section">
+        <div class="notification-list" id="notification-list">
+          <!-- Notifications will be dynamically loaded here -->
+        </div>
+        <div class="notification-details" id="notification-details" style="display: none;">
+          <h3>Notification Details</h3>
+          <div id="notification-content">
+            <!-- Notification content will be loaded here -->
+          </div>
+          <div class="notification-actions">
+            <button id="back-button" class="btn-secondary">Back</button>
+            <button id="reply-button" class="btn-primary">Reply</button>
+          </div>
+          <div class="reply-form" id="reply-form" style="display: none;">
+            <textarea id="reply-message" placeholder="Type your reply here..."></textarea>
+            <button id="send-reply-button" class="btn-primary">Send Reply</button>
+          </div>
+        </div>
+        <div class="send-notification">
+          <h3>Send Notification</h3>
+          <form id="send-notification-form">
+            <input type="text" id="recipient-email" placeholder="Recipient email" required>
+            <input type="text" id="notification-title" placeholder="Title" required>
+            <textarea id="notification-message" placeholder="Message" required maxlength="150" oninput="updateCharCount()"></textarea>
+<p id="charCount">150 characters remaining</p>
+            <button type="submit" class="btn-primary">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentNotificationId = null; 
+    
+    function truncateMessage(message, length = 50) {
+      if (message.length > length) {
+        return `${message.substring(0, length)}...`;
+      }
+      return message;
+    }
+    
+    async function fetchNotifications() {
+    const response = await fetch('/parcel-manager/get-notifications');
+    const data = await response.json();
+    if (data.success) {
+        const notificationList = document.getElementById('notification-list');
+        
+        // Sort notifications by time in descending order (latest first)
+        data.notifications.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+        notificationList.innerHTML = data.notifications.map(notification => `
+          <div class="notification-item ${notification.is_read ? '' : 'unread'}" data-id="${notification.id}">
+            <div class="title">${notification.title}</div>
+            <div class="message">${truncateMessage(notification.message)}</div>
+            <div class="time">${notification.sender_email}, ${notification.time}</div>
+          </div>
+        `).join('');
+    }
+}
+
+    // Function to show notification details and hide send notification form
+document.getElementById('notification-list').addEventListener('click', async (event) => {
+    const notificationItem = event.target.closest('.notification-item');
+    if (notificationItem) {
+      document.querySelectorAll('.notification-item').forEach(item => item.classList.remove('selected'));
+
+      // Add 'selected' class to the clicked notification
+      notificationItem.classList.add('selected');
+
+        const notificationId = notificationItem.dataset.id;
+        currentNotificationId = notificationId; // Store the notification ID
+
+        await fetch(`/parcel-manager/mark-notification-read/${notificationId}`, { method: 'POST' });
+        notificationItem.classList.remove('unread');
+
+        // Fetch and display notification details
+        const response = await fetch(`/parcel-manager/get-notification/${notificationId}`);
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('notification-content').innerHTML = `
+                <div class="recipient"><strong>To:</strong> <strong>${data.notification.recipient_email}</strong></div>
+                <div class="title"><strong>Subject:</strong> <strong>${data.notification.title}</strong></div>
+    <br>
+    <div class="message-time-wrapper">
+    <div class="message">${data.notification.message.replace(/\n/g, '<br>')}</div>
+    <br>
+    <div class="time">${data.notification.sender_email}, ${data.notification.time}</div>
+            `;
+
+            // Hide Send Notification form, Show Notification Details
+            document.querySelector('.send-notification').style.display = 'none';
+            document.getElementById('notification-details').style.display = 'block';
+        }
+    }
+});
+
+// Handle Back button click to return to Send Notification
+document.getElementById('back-button').addEventListener('click', () => {
+    document.getElementById('notification-details').style.display = 'none';
+    document.querySelector('.send-notification').style.display = 'block';
+});
+
+
+    document.getElementById('reply-button').addEventListener('click', () => {
+      document.getElementById('reply-form').style.display = 'block';
+    });
+
+    document.getElementById('send-reply-button').addEventListener('click', async () => {
+      const replyMessage = document.getElementById('reply-message').value;
+      if (!currentNotificationId || !replyMessage) {
+        alert('Please enter a reply message.');
+        return;
+      }
+      const response = await fetch(`/parcel-manager/reply-notification/${currentNotificationId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reply_message: replyMessage })
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert('Reply sent successfully!');
+        document.getElementById('reply-form').style.display = 'none';
+        document.getElementById('reply-message').value = '';
+        showReplyForm(notificationId);
+      } else {
+        alert(data.message);
+      }
+    });
+
+    // Function to show the reply form with original message
+function showReplyForm(notificationId) {
+    const originalMessage = document.getElementById('reply-message').getAttribute('data-original-message');
+
+    // Prefill the textarea with the original message
+    document.getElementById('reply-message').value = `Reply to: \n${originalMessage}\n\n`;
+
+    // Show reply section
+    document.getElementById('reply-section').style.display = 'block';
+
+    // Store notification ID for sending reply
+    document.getElementById('reply-section').setAttribute('data-notification-id', notificationId);
+}
+
+    document.getElementById('send-notification-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const recipientEmail = document.getElementById('recipient-email').value;
+      const title = document.getElementById('notification-title').value;
+      const message = document.getElementById('notification-message').value;
+      const response = await fetch('/parcel-manager/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipient_email: recipientEmail, title, message })
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert('Notification sent successfully!');
+        fetchNotifications();
+        document.getElementById('send-notification-form').reset(); 
+      } else {
+        alert(data.message);
+      }
+    });
+    
+    fetchNotifications();
+
+    function updateCharCount() {
+    let textarea = document.getElementById("notification-message");
+    let charCount = document.getElementById("charCount");
+
+    let text = textarea.value;
+
+    // Count actual characters + give Enter ('\n') a weight of 10 characters
+    let enterCount = (text.match(/\n/g) || []).length; // Count newlines
+    let adjustedCount = text.length + enterCount * 9; // Each Enter already counts as 1, so add 9 more
+
+    // Enforce max length by trimming excess characters
+    while (adjustedCount > 150) {
+        text = text.slice(0, -1); // Remove last character
+        enterCount = (text.match(/\n/g) || []).length; // Recalculate newlines
+        adjustedCount = text.length + enterCount * 9;
+    }
+
+    textarea.value = text; // Update textarea with trimmed text
+
+    // Display remaining character count
+    let remaining = 150 - adjustedCount;
+    charCount.textContent = remaining + " characters remaining";
+}
+  </script>
+{% endblock %}
