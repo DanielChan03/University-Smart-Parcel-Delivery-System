@@ -291,7 +291,7 @@ def organize_parcel():
                         Parcel_ID=parcel.Parcel_ID,
                         Status_Type="Ready to Pickup",
                         Updated_by=current_user.Manager_ID,
-                        Updated_At=datetime.utcnow()
+                        Updated_At=datetime.now()
                     )
                     db.session.add(new_status)
 
