@@ -10,7 +10,7 @@
   <div class="container">
     <div class="panel">
       <h2>Report Delivery Issue</h2>
-      <form class="report-form" action="{{ url_for('courier.report_parcel') }}" method="POST">
+      <form class="report-form" action="{{ url_for('report_parcel_issue.report_parcel') }}" method="POST">
         <!-- Parcel ID -->
         <label for="parcel_id">Parcel ID:</label>
         <input type="text" id="parcel_id" name="parcel_id" placeholder="Enter Parcel ID" required>
@@ -59,7 +59,7 @@
   });
 
   function goBack() {
-            window.location.href = "{{ url_for('courier.viewReportedHistory') }}";
+            window.location.href = "{{ url_for('view_reported_history.viewReportedHistory') }}";
         
     }
   </script>
