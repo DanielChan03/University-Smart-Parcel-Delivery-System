@@ -3,32 +3,28 @@
 {% block title %}Monitor Locker Issue{% endblock %}
 
 {% block styles %}
-
     <link rel="stylesheet" href="{{ url_for('static', filename = 'ParcelManagercss/ParcelManagerMonitorLockerIssue.css')}}">
-
 {% endblock %}
 
 {% block content %}
-
-    <div class = "monitor-locker-issue-container">
+    <div class="monitor-locker-issue-container">
         <h3 class="form-title">Monitor Locker Issue</h3>
 
         <!-- Filter Section -->
-         <form method="GET" action="{{ url_for('parcel_manager.monitor_locker_issue') }}">
-            <div class = "filter-section">
-                <input type="text" name="filter" placeholder="Search by Locker ID" class = "filter-input" value="{{ lockerFilter if lockerFilter else '' }}">
-                <button type="submit" class = "apply-filter-button">Apply Filters</button>
-             </div>
-         </form>
-         
-        
+        <form method="GET" action="{{ url_for('parcel_manager.monitor_locker_issue') }}">
+            <div class="filter-section">
+                <input type="text" name="filter" placeholder="Search by Locker ID" class="filter-input" value="{{ lockerFilter if lockerFilter else '' }}">
+                <button type="submit" class="apply-filter-button">Apply Filters</button>
+            </div>
+        </form>
+
         <!-- Locker Table -->
         <table class="locker-issue-table">
             <thead>
                 <tr>
-                    <td>Locker ID</td>
-                    <td>Locker Location</td>
-                    <td>Locker Status</td>
+                    <th>Locker ID</th>
+                    <th>Locker Location</th>
+                    <th>Locker Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,11 +32,20 @@
                     <tr>
                         <td>{{ locker.Locker_ID }}</td>
                         <td>{{ locker.Locker_Location }}</td>
-                        <td>{{ locker.Locker_Status}}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('parcel_manager.update_locker_status') }}">
+                                <input type="hidden" name="locker_id" value="{{ locker.Locker_ID }}">
+                                <select name="new_status" class="status-select">
+                                    <option value="Available" {% if locker.Locker_Status == 'Available' %}selected{% endif %}>Available</option>
+                                    <option value="Occupied" {% if locker.Locker_Status == 'Occupied' %}selected{% endif %}>Occupied</option>
+                                    <option value="Under Maintainance" {% if locker.Locker_Status == 'Under Maintainance' %}selected{% endif %}>Under Maintainance</option>
+                                </select>
+                                <button type="submit" class="update-button">Update</button>
+                            </form>
+                        </td>
                     </tr>
-                    {% endfor %}
+                {% endfor %}
             </tbody>
         </table>
     </div>
-
 {% endblock %}
