@@ -14,7 +14,6 @@ def create_app():
     from .views import views
     from .auth import auth
     from .admin import admin
-    from .courier import courier
     from .AdminAuth import admin_auth 
     from webapp.Couriercode.CourierAuth import courier_auth
     from .ParcelManagerAuth import parcel_manager_auth
