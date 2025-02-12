@@ -299,9 +299,16 @@ def track_parcel():
 @login_required
 def notifications():
     user_email = current_user.User_Email
-    notifications = [n for n in session.get('notifications', []) if n.get('recipient_email') == user_email]
+    notifications = session.get('notifications', [])
 
-    return render_template('StudentStaff/StudentStaffNotification.html', notifications=notifications)
+    # Ensure notifications are a list of dictionaries
+    if isinstance(notifications, list) and all(isinstance(n, dict) for n in notifications):
+        filtered_notifications = [n for n in notifications if n.get('recipient_email') == user_email]
+    else:
+        filtered_notifications = []  # If data is invalid, reset it to an empty list
+
+    return render_template('StudentStaff/StudentStaffNotification.html', notifications=filtered_notifications)
+
 
 
 
