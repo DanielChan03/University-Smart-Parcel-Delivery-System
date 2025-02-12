@@ -346,7 +346,7 @@ def update_parcel_status():
                 Parcel_ID=parcel_id,
                 Status_Type=update_status,
                 Updated_by=current_user.Manager_ID,
-                Updated_At=datetime.now(timezone.utc)
+                Updated_At=datetime.now()
             )
             db.session.add(new_status)
             db.session.commit()
@@ -416,7 +416,7 @@ def log_arrival_parcel():
                 Parcel_ID=parcel_id,
                 Status_Type=update_status,
                 Updated_by=current_user.Manager_ID,
-                Updated_At=datetime.now(timezone.utc)
+                Updated_At=datetime.now()
             )
             db.session.add(new_status)
             db.session.commit()
@@ -487,7 +487,7 @@ def assign_parcel_to_locker():
                     Parcel_ID=parcel_id,
                     Status_Type=f"Assigned to Locker {locker.Locker_ID}",
                     Updated_by=current_user.Manager_ID,
-                    Updated_At=datetime.now(timezone.utc)
+                    Updated_At=datetime.now()
                 )
                 db.session.add(new_status)
 
