@@ -34,7 +34,7 @@
                             <form method="POST" action="{{ url_for('manage_status.manage_parcel_status') }}" class="status-form">
                                 <input type="hidden" name="Parcel_ID" value="{{ parcel.Parcel_ID }}">
                                 <select name="Update_Status" class="status-select"
-                                    {% if parcel.Current_Status == 'Verified' or parcel.Current_Status.startswith('Reported - ') %} disabled {% endif %} 
+                                    {% if parcel.Current_Status.startswith('Verified - ') or parcel.Current_Status.startswith('Reported - ') %} disabled {% endif %} 
                                     required>
                                     <option disabled selected>Select Status</option>
                                     <option value="Parcel Outgoing">Parcel Outgoing</option>
