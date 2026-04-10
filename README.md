@@ -89,6 +89,7 @@ http://127.0.0.1:5000
 ```
 
 ## 👤 User Login Guide
+
 1. 🧑‍🎓 Student / Staff
 Go to homepage login
 Enter your email and password directly
@@ -136,6 +137,8 @@ UPMS/
 ```
 
 ## 📌 Notes
-Ensure Flask is installed before running the system
-Always run main.py from the project root directory
-Use correct login URLs for each role
+Ensure Flask is installed before running the system.
+
+Always run main.py from the project root directory.
+
+Use correct login URLs for each role.
