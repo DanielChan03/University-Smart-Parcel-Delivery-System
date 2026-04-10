@@ -1,0 +1,12 @@
+name: myflaskenv
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - flask
+  - pip
+  - pip:
+      - flask-login
+      - werkzeug
+      - sqlalchemy
+      - flask_sqlalchemy
